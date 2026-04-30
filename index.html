@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML Course | Классификация</title>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --bg-2: #fffdfa;
+      --text: #1f1b16;
+      --muted: #5f564d;
+      --primary: #c5522d;
+      --primary-2: #e07a45;
+      --accent: #1f6a5a;
+      --card: #fff;
+      --border: #eadfce;
+      --shadow: 0 14px 36px rgba(84, 54, 28, 0.12);
+      --radius: 18px;
+      --code-bg: #1f1f1f;
+      --code-text: #f1efe8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(900px 360px at 10% 0%, #f4d8b6 0%, transparent 70%),
+        radial-gradient(700px 300px at 100% 10%, #cfe9e0 0%, transparent 68%),
+        var(--bg);
+      font-family: "Source Sans 3", "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    .wrap {
+      width: min(1100px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 1rem 0 3rem;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+      background: rgba(247, 244, 239, 0.82);
+      border-bottom: 1px solid rgba(197, 82, 45, 0.14);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.9rem 0;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-family: "Bitter", "Georgia", serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    nav {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.28rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+      border-color: rgba(197, 82, 45, 0.28);
+      background: rgba(197, 82, 45, 0.06);
+    }
+
+    .hero {
+      margin: 1.5rem 0 1.35rem;
+      background: linear-gradient(115deg, #fffaf2, #fcf6ed 44%, #f2fbf8);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 1.4rem;
+      animation: fadeIn 0.65s ease both;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-family: "Bitter", "Georgia", serif;
+      line-height: 1.15;
+      font-size: clamp(1.8rem, 4vw, 2.65rem);
+    }
+
+    .hero p {
+      margin: 0.8rem 0 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 0.34rem 0.75rem;
+      border: 1px solid rgba(31, 106, 90, 0.22);
+      color: var(--accent);
+      background: rgba(31, 106, 90, 0.08);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .model-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      margin-top: 1rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      animation: riseIn 0.55s ease both;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-family: "Bitter", "Georgia", serif;
+      font-size: 1.45rem;
+      color: #3b2e22;
+    }
+
+    .section-title {
+      margin: 0.95rem 0 0.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.98rem;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+
+    .card p {
+      margin: 0;
+      color: #3c342c;
+      font-size: 0.98rem;
+    }
+
+    pre {
+      margin: 0.5rem 0 0;
+      padding: 0.8rem;
+      border-radius: 12px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      overflow-x: auto;
+      font-size: 0.84rem;
+      line-height: 1.4;
+      border: 1px solid #353535;
+    }
+
+    code { font-family: "JetBrains Mono", "Fira Code", monospace; }
+
+    ul {
+      margin: 0.3rem 0 0;
+      padding-left: 1.1rem;
+    }
+
+    footer {
+      margin: 1.2rem 0 0;
+      padding: 1rem 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      border-top: 1px dashed rgba(84, 54, 28, 0.2);
+    }
+
+    @media (max-width: 760px) {
+      .wrap { width: min(1100px, calc(100% - 1.2rem)); }
+      .hero { padding: 1.4rem 1rem; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      nav { justify-content: flex-start; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div class="logo">ML Course • Classification</div>
+      <nav>
+        <a href="#nb">NB</a>
+        <a href="#knn">KNN</a>
+        <a href="#rf">RF</a>
+        <a href="#dt">DT</a>
+        <a href="#lr">LR</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Классификация в ML: теория + код + готовые настройки</h1>
+      <p>Ниже собраны базовые модели классификации. Для каждой есть краткий принцип работы, реализация без sklearn, реализация на sklearn, гиперпараметры и заготовка для <code>GridSearchCV</code>.</p>
+      <div class="chip-row">
+        <span class="chip">Naive Bayes</span>
+        <span class="chip">K Nearest Neighbors</span>
+        <span class="chip">Random Forest</span>
+        <span class="chip">Decision Tree</span>
+        <span class="chip">Logistic Regression</span>
+      </div>
+    </section>
+
+    <section class="model-grid">
+      <article class="card" id="nb">
+        <h2>NB</h2>
+        <p class="section-title">Принцип работы</p>
+        <p>Использует формулу Байеса и предположение о независимости признаков внутри класса. Выбирается класс с максимальной апостериорной вероятностью.</p>
+
+        <p class="section-title">Собственная реализация без sklearn</p>
+<pre><code>import numpy as np
+
+class GaussianNBFromScratch:
+    def fit(self, X, y):
+        self.classes_ = np.unique(y)
+        self.mean_ = {}
+        self.var_ = {}
+        self.prior_ = {}
+        for c in self.classes_:
+            Xc = X[y == c]
+            self.mean_[c] = Xc.mean(axis=0)
+            self.var_[c] = Xc.var(axis=0) + 1e-9
+            self.prior_[c] = len(Xc) / len(X)
+
+    def _log_likelihood(self, x, c):
+        mean = self.mean_[c]
+        var = self.var_[c]
+        return -0.5 * np.sum(np.log(2 * np.pi * var) + ((x - mean) ** 2) / var)
+
+    def predict(self, X):
+        preds = []
+        for x in X:
+            scores = [np.log(self.prior_[c]) + self._log_likelihood(x, c) for c in self.classes_]
+            preds.append(self.classes_[np.argmax(scores)])
+        return np.array(preds)</code></pre>
+
+        <p class="section-title">Реализация sklearn</p>
+<pre><code>from sklearn.naive_bayes import GaussianNB
+
+model = GaussianNB()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre>
+
+        <p class="section-title">Гиперпараметры sklearn</p>
+        <ul>
+          <li><code>var_smoothing</code>: стабилизация дисперсии для численной устойчивости.</li>
+          <li><code>priors</code>: априорные вероятности классов вручную.</li>
+        </ul>
+
+        <p class="section-title">Готовое set_params для Grid Search</p>
+<pre><code>nb_grid = {
+    "var_smoothing": np.logspace(-12, -6, 7)
+}</code></pre>
+      </article>
+
+      <article class="card" id="knn">
+        <h2>KNN</h2>
+        <p class="section-title">Принцип работы</p>
+        <p>Для нового объекта ищет ближайшие точки в обучающей выборке и голосует по их классам. Качество сильно зависит от масштаба признаков.</p>
+
+        <p class="section-title">Собственная реализация без sklearn</p>
+<pre><code>import numpy as np
+from collections import Counter
+
+class KNNFromScratch:
+    def __init__(self, k=5):
+        self.k = k
+
+    def fit(self, X, y):
+        self.X_train = X
+        self.y_train = y
+
+    def _distance(self, a, b):
+        return np.sqrt(np.sum((a - b) ** 2))
+
+    def predict(self, X):
+        preds = []
+        for x in X:
+            dists = [self._distance(x, x_train) for x_train in self.X_train]
+            idx = np.argsort(dists)[:self.k]
+            nearest_labels = self.y_train[idx]
+            preds.append(Counter(nearest_labels).most_common(1)[0][0])
+        return np.array(preds)</code></pre>
+
+        <p class="section-title">Реализация sklearn</p>
+<pre><code>from sklearn.neighbors import KNeighborsClassifier
+
+model = KNeighborsClassifier(n_neighbors=5)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre>
+
+        <p class="section-title">Гиперпараметры sklearn</p>
+        <ul>
+          <li><code>n_neighbors</code>: число соседей.</li>
+          <li><code>weights</code>: равные веса или по расстоянию.</li>
+          <li><code>metric</code>: метрика расстояния (<code>euclidean</code>, <code>manhattan</code>).</li>
+          <li><code>p</code>: степень нормы Минковского (2 - Евклид, 1 - Манхэттен).</li>
+        </ul>
+
+        <p class="section-title">Готовое set_params для Grid Search</p>
+<pre><code>knn_grid = {
+    "n_neighbors": [3, 5, 7, 9, 11],
+    "weights": ["uniform", "distance"],
+    "metric": ["euclidean", "manhattan"],
+    "p": [1, 2]
+}</code></pre>
+      </article>
+
+      <article class="card" id="rf">
+        <h2>RF</h2>
+        <p class="section-title">Принцип работы</p>
+        <p>Собирает ансамбль деревьев по бутстрэп-выборкам и случайным подмножествам признаков. Итог - голосование деревьев, что снижает переобучение.</p>
+
+        <p class="section-title">Собственная реализация без sklearn</p>
+<pre><code>import numpy as np
+from collections import Counter
+
+class TinyDecisionStump:
+    def fit(self, X, y):
+        self.feature_ = 0
+        self.threshold_ = np.median(X[:, 0])
+        left = y[X[:, 0] &lt;= self.threshold_]
+        right = y[X[:, 0] &gt; self.threshold_]
+        self.left_class_ = Counter(left).most_common(1)[0][0]
+        self.right_class_ = Counter(right).most_common(1)[0][0]
+
+    def predict(self, X):
+        return np.where(X[:, 0] &lt;= self.threshold_, self.left_class_, self.right_class_)
+
+class RandomForestToy:
+    def __init__(self, n_estimators=10):
+        self.n_estimators = n_estimators
+        self.trees = []
+
+    def fit(self, X, y):
+        n = len(X)
+        self.trees = []
+        for _ in range(self.n_estimators):
+            idx = np.random.choice(n, n, replace=True)
+            tree = TinyDecisionStump()
+            tree.fit(X[idx], y[idx])
+            self.trees.append(tree)
+
+    def predict(self, X):
+        preds = np.array([tree.predict(X) for tree in self.trees]).T
+        return np.array([Counter(row).most_common(1)[0][0] for row in preds])</code></pre>
+
+        <p class="section-title">Реализация sklearn</p>
+<pre><code>from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre>
+
+        <p class="section-title">Гиперпараметры sklearn</p>
+        <ul>
+          <li><code>n_estimators</code>: количество деревьев.</li>
+          <li><code>max_depth</code>: ограничение глубины дерева.</li>
+          <li><code>min_samples_split</code>, <code>min_samples_leaf</code>: контроль ветвления.</li>
+          <li><code>max_features</code>: сколько признаков пробовать на каждом сплите.</li>
+          <li><code>bootstrap</code>: использовать ли бутстрэп.</li>
+        </ul>
+
+        <p class="section-title">Готовое set_params для Grid Search</p>
+<pre><code>rf_grid = {
+    "n_estimators": [100, 200, 400],
+    "max_depth": [None, 5, 10, 20],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4],
+    "max_features": ["sqrt", "log2"],
+    "bootstrap": [True, False]
+}</code></pre>
+      </article>
+
+      <article class="card" id="dt">
+        <h2>DT</h2>
+        <p class="section-title">Принцип работы</p>
+        <p>Рекурсивно делит данные по признакам, максимизируя прирост информативности (например, по Gini). Легко интерпретируется, но склонно к переобучению.</p>
+
+        <p class="section-title">Собственная реализация без sklearn</p>
+<pre><code>import numpy as np
+
+class DecisionTreeOneSplit:
+    def fit(self, X, y):
+        self.feature_ = 0
+        self.threshold_ = np.median(X[:, 0])
+        left = y[X[:, 0] &lt;= self.threshold_]
+        right = y[X[:, 0] &gt; self.threshold_]
+        self.left_class_ = np.bincount(left).argmax()
+        self.right_class_ = np.bincount(right).argmax()
+
+    def predict(self, X):
+        return np.where(X[:, 0] &lt;= self.threshold_, self.left_class_, self.right_class_)</code></pre>
+
+        <p class="section-title">Реализация sklearn</p>
+<pre><code>from sklearn.tree import DecisionTreeClassifier
+
+model = DecisionTreeClassifier(random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre>
+
+        <p class="section-title">Гиперпараметры sklearn</p>
+        <ul>
+          <li><code>criterion</code>: функция качества (<code>gini</code> или <code>entropy</code>).</li>
+          <li><code>max_depth</code>: глубина дерева.</li>
+          <li><code>min_samples_split</code>, <code>min_samples_leaf</code>: регуляризация.</li>
+          <li><code>max_features</code>: ограничение числа признаков для сплита.</li>
+          <li><code>ccp_alpha</code>: post-pruning через cost complexity pruning.</li>
+        </ul>
+
+        <p class="section-title">Готовое set_params для Grid Search</p>
+<pre><code>dt_grid = {
+    "criterion": ["gini", "entropy"],
+    "max_depth": [None, 3, 5, 10, 20],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4],
+    "max_features": [None, "sqrt", "log2"],
+    "ccp_alpha": [0.0, 0.001, 0.01]
+}</code></pre>
+      </article>
+
+      <article class="card" id="lr">
+        <h2>LR</h2>
+        <p class="section-title">Принцип работы</p>
+        <p>Оценивает вероятность класса через сигмоиду от линейной комбинации признаков. Граница решения линейная, обучение обычно через градиентные методы.</p>
+
+        <p class="section-title">Собственная реализация без sklearn</p>
+<pre><code>import numpy as np
+
+class LogisticRegressionFromScratch:
+    def __init__(self, lr=0.05, n_iter=2000):
+        self.lr = lr
+        self.n_iter = n_iter
+
+    def _sigmoid(self, z):
+        return 1 / (1 + np.exp(-z))
+
+    def fit(self, X, y):
+        n, m = X.shape
+        self.w = np.zeros(m)
+        self.b = 0
+        for _ in range(self.n_iter):
+            z = X @ self.w + self.b
+            y_hat = self._sigmoid(z)
+            dw = (1 / n) * (X.T @ (y_hat - y))
+            db = (1 / n) * np.sum(y_hat - y)
+            self.w -= self.lr * dw
+            self.b -= self.lr * db
+
+    def predict(self, X):
+        probs = self._sigmoid(X @ self.w + self.b)
+        return (probs &gt;= 0.5).astype(int)</code></pre>
+
+        <p class="section-title">Реализация sklearn</p>
+<pre><code>from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression(max_iter=2000)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre>
+
+        <p class="section-title">Гиперпараметры sklearn</p>
+        <ul>
+          <li><code>C</code>: сила регуляризации (меньше значение - сильнее регуляризация).</li>
+          <li><code>penalty</code>: тип регуляризации (<code>l1</code>, <code>l2</code>, <code>elasticnet</code>).</li>
+          <li><code>solver</code>: алгоритм оптимизации (<code>liblinear</code>, <code>lbfgs</code>, <code>saga</code>).</li>
+          <li><code>class_weight</code>: веса классов при дисбалансе.</li>
+          <li><code>max_iter</code>: лимит итераций оптимизатора.</li>
+        </ul>
+
+        <p class="section-title">Готовое set_params для Grid Search</p>
+<pre><code>lr_grid = {
+    "C": [0.01, 0.1, 1, 10, 100],
+    "penalty": ["l1", "l2"],
+    "solver": ["liblinear", "saga"],
+    "class_weight": [None, "balanced"],
+    "max_iter": [1000, 2000, 4000]
+}</code></pre>
+      </article>
+    </section>
+
+    <footer>
+      Материал можно расширить секциями "Регрессия", "Кластеризация", "Метрики" и добавить ноутбуки с экспериментами.
+    </footer>
+  </main>
+</body>
+</html>

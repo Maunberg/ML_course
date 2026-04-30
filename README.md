@@ -1,2 +1,22 @@
-# ML_course
-Short ML description for every model
+# ML Course
+
+Сайт для GitHub Pages с материалами по машинному обучению.
+
+## Что уже есть
+
+- Раздел **Классификация**
+- Модели: `NB`, `KNN`, `RF`, `DT`, `LR`
+- Для каждой модели:
+  - принцип работы
+  - собственная реализация без `sklearn`
+  - реализация `sklearn`
+  - описание гиперпараметров `sklearn`
+  - готовый `set_params` для `GridSearchCV`
+
+## Запуск локально
+
+Открой `index.html` в браузере.
+
+## GitHub Pages
+
+Для публикации через GitHub Pages используй корень репозитория `ML_course` и файл `index.html` как стартовую страницу.
