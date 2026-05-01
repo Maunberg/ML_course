@@ -1,22 +1,29 @@
 # ML Course
 
-Сайт для GitHub Pages с материалами по машинному обучению.
+GitHub Pages сайт с материалами по ML.
 
-## Что уже есть
+## Структура
 
-- Раздел **Классификация**
-- Модели: `NB`, `KNN`, `RF`, `DT`, `LR`
-- Для каждой модели:
-  - принцип работы
-  - собственная реализация без `sklearn`
-  - реализация `sklearn`
-  - описание гиперпараметров `sklearn`
-  - готовый `set_params` для `GridSearchCV`
+- Главная: `index.html`
+- Классические модели:
+  - `classic/classification.html`
+  - `classic/regression.html`
+  - `classic/clustering.html`
+  - `classic/dim-reduction.html`
+  - `classic/ensembles.html`
+- Нейронные сети:
+  - `neural/fcn.html`
+  - `neural/cnn.html`
+  - `neural/rnn.html`
+  - `neural/transformer.html`
 
-## Запуск локально
+## Формат материалов
 
-Открой `index.html` в браузере.
-
-## GitHub Pages
-
-Для публикации через GitHub Pages используй корень репозитория `ML_course` и файл `index.html` как стартовую страницу.
+Для каждой модели добавлены раскрывающиеся блоки:
+- принцип работы
+- математическое обоснование
+- собственная реализация
+- реализация на библиотеке
+- гиперпараметры
+- интуиция применения
+- сетка гиперпараметров для grid search

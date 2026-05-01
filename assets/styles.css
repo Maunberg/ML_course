@@ -1,0 +1,46 @@
+:root {
+  --bg: #f6f2eb;
+  --text: #1f1a14;
+  --muted: #62574a;
+  --primary: #ba5328;
+  --accent: #135e53;
+  --card: #fffdfa;
+  --border: #e6d8c2;
+  --shadow: 0 14px 36px rgba(65, 40, 18, 0.12);
+  --r: 16px;
+  --code-bg: #202020;
+  --code-text: #efece5;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(900px 360px at 5% 0%, #f5d9b8 0%, transparent 70%),
+    radial-gradient(760px 320px at 100% 8%, #d8eee5 0%, transparent 70%),
+    var(--bg);
+}
+.wrap { width: min(1140px, calc(100% - 2rem)); margin: 0 auto; padding: 1rem 0 2.5rem; }
+.hero, .panel {
+  background: linear-gradient(120deg, #fff9f1, #fffdf9 52%, #eef9f6);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+.hero { padding: 1.8rem 1.2rem; }
+.panel { padding: 1rem; margin-top: 1rem; background: var(--card); }
+h1, h2 { font-family: "Bitter", "Georgia", serif; margin: 0; }
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.9rem); line-height: 1.1; }
+h2 { font-size: 1.45rem; color: #38291f; }
+p { color: #3c342c; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(19,94,83,.4); }
+a:hover { color: var(--primary); border-color: rgba(186,83,40,.4); }
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+.chips a { border: 1px solid rgba(19,94,83,.22); background: rgba(19,94,83,.07); border-radius: 999px; padding: .32rem .7rem; font-weight: 700; }
+details { margin-top: .55rem; border: 1px solid #efe4d4; border-radius: 11px; padding: .1rem .7rem .7rem; background: #fffdfa; }
+summary { cursor: pointer; font-weight: 700; padding: .62rem 0; }
+pre { margin: .45rem 0 0; padding: .72rem; border-radius: 10px; background: var(--code-bg); color: var(--code-text); overflow-x: auto; font-size: .84rem; line-height: 1.42; }
+code { font-family: "JetBrains Mono", "Fira Code", monospace; }
+.grid { margin-top: 1rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+@media (max-width:760px) { .wrap { width: min(1140px, calc(100% - 1.2rem)); } .hero { padding: 1.3rem .95rem; } }
