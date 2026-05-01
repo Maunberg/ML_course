@@ -1,2 +1,43 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Сверточная сеть | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="panel"><h1>Сверточная сеть (CNN)</h1></section><section class="panel"><h2>Базовая CNN для классификации изображений</h2><details><summary>Принцип работы коротко</summary><p>Свертки извлекают локальные паттерны, пулинг уменьшает размерность, далее классификатор.</p></details><details><summary>Математическое обоснование подробно</summary><p>Свертка: <code>y[i,j]=Σ_k Σ_l x[i+k,j+l]w[k,l]</code>, затем нелинейность и нормализация.</p></details><details><summary>Собственная реализация</summary><pre><code># Мини-CNN на NumPy: conv2d + relu + maxpool + dense</code></pre></details><details><summary>Реализация sklearn</summary><pre><code># В sklearn нет нативной CNN; используют PyTorch/Keras.
-import torch.nn as nn</code></pre></details><details><summary>Описание гиперпараметров</summary><p>Число фильтров, размер ядра, stride, padding, dropout, learning rate.</p></details><details><summary>Интуиция использования</summary><p>Лучший старт для задач компьютерного зрения.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"filters":[32,64],"kernel_size":[3,5],"dropout":[0.0,0.3,0.5],"lr":[1e-4,1e-3]}</code></pre></details></section></main></body></html>
+<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Сверточная сеть | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="hero"><h1>Сверточная сеть (CNN)</h1></section><section class="panel"><h2>CNN для классификации изображений</h2><details><summary>Принцип работы коротко</summary><p>Свертки извлекают локальные паттерны, pooling уменьшает размерность, полносвязная голова классифицирует.</p></details><details><summary>Математическое обоснование</summary><pre><code>2D convolution:
+y[n, c_out, i, j] = sum_{c_in, u, v} W[c_out, c_in, u, v] * x[n, c_in, i+u, j+v]
+
+Далее:
+h = ReLU(BN(y))
+h_pool = MaxPool(h)
+logits = Linear(flatten(h_pool))
+
+Loss:
+L = CrossEntropy(logits, y_true)
+
+Обучение:
+backprop через conv, bn, linear + шаг Adam/SGD.</code></pre></details><details><summary>Реализация PyTorch</summary><pre><code>import torch
+import torch.nn as nn
+
+class SimpleCNN(nn.Module):
+    def __init__(self, num_classes=10):
+        super().__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(64 * 8 * 8, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        return self.classifier(x)
+
+model = SimpleCNN(num_classes=10)
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)</code></pre></details><details><summary>Описание параметров реализации PyTorch</summary><ul><li><code>out_channels</code> в <code>Conv2d</code>: сколько карт признаков извлекаем.</li><li><code>kernel_size</code>: размер окна свертки (часто 3x3).</li><li><code>stride</code>, <code>padding</code>: контроль пространственного размера.</li><li><code>BatchNorm2d</code>: стабилизация и ускорение обучения.</li><li><code>Dropout</code>: регуляризация.</li><li><code>num_classes</code>: размер выходного слоя.</li><li><code>lr</code>, <code>weight_decay</code>, <code>batch_size</code>: ключевые параметры оптимизации.</li></ul></details><details><summary>Интуиция использования</summary><p>Стандартный выбор для изображений и карт признаков, когда важны локальные шаблоны и их иерархия.</p></details></section></main></body></html>

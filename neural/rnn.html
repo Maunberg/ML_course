@@ -1,1 +1,37 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Рекуррентная сеть | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="panel"><h1>Рекуррентная сеть (RNN/LSTM/GRU)</h1></section><section class="panel"><h2>LSTM для последовательностей</h2><details><summary>Принцип работы коротко</summary><p>Обрабатывает последовательность шаг за шагом, сохраняя скрытое состояние и память.</p></details><details><summary>Математическое обоснование подробно</summary><p>LSTM использует ворота forget/input/output для контроля потока информации и градиентов.</p></details><details><summary>Собственная реализация</summary><pre><code># RNN-cell/LSTM-cell на NumPy: h_t = f(Wx_t + Uh_{t-1} + b)</code></pre></details><details><summary>Реализация sklearn</summary><pre><code># В sklearn нет нативной LSTM; обычно PyTorch/Keras.</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>hidden_size</code>, <code>num_layers</code>, <code>dropout</code>, <code>bidirectional</code>, <code>lr</code>.</p></details><details><summary>Интуиция использования</summary><p>Для временных рядов и текстов, когда важен порядок токенов/наблюдений.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"hidden_size":[64,128,256],"num_layers":[1,2,3],"dropout":[0.0,0.2,0.4],"lr":[1e-4,1e-3]}</code></pre></details></section></main></body></html>
+<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Рекуррентная сеть | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="hero"><h1>Рекуррентная сеть (RNN / LSTM / GRU)</h1></section><section class="panel"><h2>LSTM для последовательностей</h2><details><summary>Принцип работы коротко</summary><p>Модель обрабатывает последовательность по шагам и хранит состояние, которое переносит информацию из прошлого.</p></details><details><summary>Математическое обоснование</summary><pre><code>Для LSTM на шаге t:
+f_t = sigmoid(W_f x_t + U_f h_{t-1} + b_f)      # forget gate
+i_t = sigmoid(W_i x_t + U_i h_{t-1} + b_i)      # input gate
+g_t = tanh(W_g x_t + U_g h_{t-1} + b_g)         # candidate
+c_t = f_t * c_{t-1} + i_t * g_t                 # memory update
+o_t = sigmoid(W_o x_t + U_o h_{t-1} + b_o)      # output gate
+h_t = o_t * tanh(c_t)
+
+Loss:
+L = CrossEntropy(head(h_T), y_true)
+
+Обучение:
+BPTT (backpropagation through time) + optimizer step.</code></pre></details><details><summary>Реализация PyTorch</summary><pre><code>import torch
+import torch.nn as nn
+
+class LSTMClassifier(nn.Module):
+    def __init__(self, input_size, hidden_size=128, num_layers=2, num_classes=2, dropout=0.2):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            batch_first=True,
+            dropout=dropout if num_layers > 1 else 0.0,
+            bidirectional=False
+        )
+        self.head = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        out, (h_n, c_n) = self.lstm(x)
+        last_hidden = h_n[-1]
+        logits = self.head(last_hidden)
+        return logits
+
+model = LSTMClassifier(input_size=64, hidden_size=128, num_layers=2, num_classes=3)
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)</code></pre></details><details><summary>Описание параметров реализации PyTorch</summary><ul><li><code>input_size</code>: размер признаков на шаге последовательности.</li><li><code>hidden_size</code>: размер скрытого состояния (емкость памяти).</li><li><code>num_layers</code>: глубина стека LSTM.</li><li><code>dropout</code>: применяется между LSTM-слоями.</li><li><code>bidirectional</code>: двунаправленный контекст.</li><li><code>batch_first=True</code>: формат входа <code>(batch, seq, feature)</code>.</li><li><code>lr</code>, <code>clip_grad_norm_</code>: стабильность обучения.</li></ul></details><details><summary>Интуиция использования</summary><p>Подходит для временных рядов, текста и событийных последовательностей, где порядок наблюдений критичен.</p></details></section></main></body></html>

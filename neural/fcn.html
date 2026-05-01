@@ -1,2 +1,42 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Полносвязная сеть | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="panel"><h1>Полносвязная сеть (FCN/MLP)</h1></section><section class="panel"><h2>MLP Classifier</h2><details><summary>Принцип работы коротко</summary><p>Последовательность линейных слоев и нелинейностей обучается через backpropagation.</p></details><details><summary>Математическое обоснование подробно</summary><p><code>h=σ(Wx+b)</code>, оптимизация функции потерь градиентным спуском через цепное правило.</p></details><details><summary>Собственная реализация</summary><pre><code># NumPy MLP: forward -> loss -> backward -> update</code></pre></details><details><summary>Реализация sklearn</summary><pre><code>from sklearn.neural_network import MLPClassifier
-model = MLPClassifier(hidden_layer_sizes=(128,64), max_iter=200).fit(X_train,y_train)</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>hidden_layer_sizes</code>, <code>activation</code>, <code>alpha</code>, <code>learning_rate_init</code>.</p></details><details><summary>Интуиция использования</summary><p>Работает на табличных и векторных признаках, когда линейных моделей недостаточно.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"hidden_layer_sizes":[(64,),(128,64)],"activation":["relu","tanh"],"alpha":[1e-5,1e-4,1e-3],"learning_rate_init":[1e-3,1e-2]}</code></pre></details></section></main></body></html>
+<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Полносвязная сеть | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="hero"><h1>Полносвязная сеть (FCN / MLP)</h1></section><section class="panel"><h2>MLP для классификации</h2><details><summary>Принцип работы коротко</summary><p>Вход проходит через последовательность линейных слоев и нелинейностей, на выходе получаем логиты классов.</p></details><details><summary>Математическое обоснование</summary><pre><code>Forward pass:
+h1 = ReLU(W1 x + b1)
+h2 = ReLU(W2 h1 + b2)
+logits = W3 h2 + b3
+p(y=c|x) = softmax(logits)_c
+
+Loss (cross-entropy):
+L = - (1/N) * sum_i log p(y_i | x_i)
+
+Обучение:
+1) forward
+2) вычисление loss
+3) backward (autograd: dL/dW, dL/db)
+4) шаг оптимизатора (SGD/Adam)</code></pre></details><details><summary>Реализация PyTorch</summary><pre><code>import torch
+import torch.nn as nn
+
+class MLPClassifier(nn.Module):
+    def __init__(self, in_features, num_classes, hidden1=128, hidden2=64, dropout=0.2):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_features, hidden1),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden1, hidden2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden2, num_classes)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+model = MLPClassifier(in_features=100, num_classes=5)
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
+
+for xb, yb in train_loader:
+    optimizer.zero_grad()
+    logits = model(xb)
+    loss = criterion(logits, yb)
+    loss.backward()
+    optimizer.step()</code></pre></details><details><summary>Описание параметров реализации PyTorch</summary><ul><li><code>in_features</code>: размер входного вектора.</li><li><code>num_classes</code>: число классов.</li><li><code>hidden1</code>, <code>hidden2</code>: ширина скрытых слоев (емкость модели).</li><li><code>dropout</code>: регуляризация, снижает переобучение.</li><li><code>lr</code>: шаг обучения.</li><li><code>weight_decay</code>: L2-регуляризация в оптимизаторе.</li><li><code>batch_size</code>: стабильность градиента и скорость.</li><li><code>epochs</code>: число проходов по train.</li></ul></details><details><summary>Интуиция использования</summary><p>Хороший выбор для табличных/векторных признаков, когда линейной модели уже не хватает, но архитектура CNN/Transformer избыточна.</p></details></section></main></body></html>

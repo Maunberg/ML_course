@@ -1,1 +1,241 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Регрессия | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="hero"><h1>Регрессия</h1><div class="chips"><a href="#lin">Linear</a><a href="#ridge">Ridge</a><a href="#lasso">Lasso</a><a href="#en">ElasticNet</a><a href="#rf">RFReg</a></div></section><section class="panel" id="lin"><h2>Linear Regression</h2><details><summary>Принцип работы коротко</summary><p>Линейная зависимость между признаками и целью.</p></details><details><summary>Математическое обоснование подробно</summary><p><code>w=(X^TX)^{-1}X^Ty</code> или GD по MSE.</p></details><details><summary>Собственная реализация</summary><pre><code>w = np.linalg.pinv(X) @ y</code></pre></details><details><summary>Реализация sklearn</summary><pre><code>LinearRegression().fit(X_train,y_train)</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>fit_intercept</code>, <code>positive</code>.</p></details><details><summary>Интуиция использования</summary><p>Быстрый и интерпретируемый baseline.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"fit_intercept":[True,False],"positive":[False,True]}</code></pre></details></section><section class="panel" id="ridge"><h2>Ridge</h2><details><summary>Принцип работы коротко</summary><p>L2-регуляризация линейной регрессии.</p></details><details><summary>Математическое обоснование подробно</summary><p><code>||y-Xw||^2 + α||w||^2</code>.</p></details><details><summary>Собственная реализация</summary><pre><code>w = np.linalg.inv(X.T@X + a*np.eye(X.shape[1])) @ X.T @ y</code></pre></details><details><summary>Реализация sklearn</summary><pre><code>Ridge(alpha=1.0).fit(X_train,y_train)</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>alpha</code>, <code>solver</code>.</p></details><details><summary>Интуиция использования</summary><p>Стабилизирует модель при коррелирующих признаках.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"alpha":[0.01,0.1,1,10,100],"solver":["auto","svd","sag"]}</code></pre></details></section><section class="panel" id="lasso"><h2>Lasso</h2><details><summary>Принцип работы коротко</summary><p>L1-регуляризация зануляет часть коэффициентов.</p></details><details><summary>Математическое обоснование подробно</summary><p><code>||y-Xw||^2 + α||w||_1</code>.</p></details><details><summary>Собственная реализация</summary><pre><code># Coordinate descent for L1 penalty</code></pre></details><details><summary>Реализация sklearn</summary><pre><code>Lasso(alpha=0.01).fit(X_train,y_train)</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>alpha</code>, <code>max_iter</code>, <code>selection</code>.</p></details><details><summary>Интуиция использования</summary><p>Удобна для отбора признаков.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"alpha":[1e-4,1e-3,1e-2,1e-1],"max_iter":[1000,3000,5000]}</code></pre></details></section><section class="panel" id="en"><h2>ElasticNet</h2><details><summary>Принцип работы коротко</summary><p>Комбинация L1+L2 регуляризации.</p></details><details><summary>Математическое обоснование подробно</summary><p><code>||y-Xw||^2 + α(ρ||w||_1 + (1-ρ)||w||_2^2)</code>.</p></details><details><summary>Собственная реализация</summary><pre><code># Proximal gradient / coordinate descent</code></pre></details><details><summary>Реализация sklearn</summary><pre><code>ElasticNet(alpha=0.01,l1_ratio=0.5).fit(X_train,y_train)</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>alpha</code>, <code>l1_ratio</code>.</p></details><details><summary>Интуиция использования</summary><p>Баланс между стабильностью и отбором признаков.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"alpha":[1e-4,1e-3,1e-2,1e-1],"l1_ratio":[0.1,0.5,0.9]}</code></pre></details></section><section class="panel" id="rf"><h2>RandomForestRegressor</h2><details><summary>Принцип работы коротко</summary><p>Усредняет предсказания множества деревьев.</p></details><details><summary>Математическое обоснование подробно</summary><p>Bagging снижает дисперсию базового дерева.</p></details><details><summary>Собственная реализация</summary><pre><code># Bootstrap trees and average outputs</code></pre></details><details><summary>Реализация sklearn</summary><pre><code>RandomForestRegressor(n_estimators=300).fit(X_train,y_train)</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>n_estimators</code>, <code>max_depth</code>, <code>min_samples_leaf</code>.</p></details><details><summary>Интуиция использования</summary><p>Сильный выбор для табличных нелинейных задач.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"n_estimators":[100,300,500],"max_depth":[None,8,16],"min_samples_leaf":[1,2,4]}</code></pre></details></section></main></body></html>
+<!doctype html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Регрессия | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head>
+<body><main class="wrap"><a href="../index.html">← На главную</a>
+<section class="hero"><h1>Регрессия (подробный разбор)</h1><p>Для каждой модели: принцип, математика, как обучается, полная реализация без sklearn, реализация sklearn, гиперпараметры, интуиция и grid.</p><div class="chips"><a href="#lin">Linear</a><a href="#ridge">Ridge</a><a href="#lasso">Lasso</a><a href="#en">ElasticNet</a><a href="#rf">RFReg</a></div></section>
+
+<section class="panel" id="lin"><h2>Linear Regression</h2>
+<details><summary>Принцип работы коротко</summary><p>Модель аппроксимирует цель линейной комбинацией признаков: y_hat = Xw + b.</p></details>
+<details><summary>Математическое обоснование подробно</summary><p>Оптимизируем MSE: L = (1/n) * sum((y_i - y_hat_i)^2). При полном ранге решение через нормальное уравнение: w = (X^T X)^(-1) X^T y. При больших данных обычно применяют градиентный спуск: dw = (2/n) X^T (Xw+b-y), db = (2/n) sum(Xw+b-y). Пример: если рост цели почти линейно зависит от одного признака, коэффициент w показывает вклад единичного изменения признака в прогноз.</p></details>
+<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+
+class LinearRegressionFromScratch:
+    def __init__(self, lr=0.01, n_iter=5000):
+        self.lr = lr
+        self.n_iter = n_iter
+
+    def fit(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        n, m = X.shape
+        self.w = np.zeros(m)
+        self.b = 0.0
+        for _ in range(self.n_iter):
+            y_hat = X @ self.w + self.b
+            err = y_hat - y
+            dw = (2.0 / n) * (X.T @ err)
+            db = (2.0 / n) * np.sum(err)
+            self.w -= self.lr * dw
+            self.b -= self.lr * db
+        return self
+
+    def predict(self, X):
+        X = np.asarray(X, dtype=float)
+        return X @ self.w + self.b</code></pre></details>
+<details><summary>Реализация sklearn</summary><pre><code>from sklearn.linear_model import LinearRegression
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre></details>
+<details><summary>Описание гиперпараметров sklearn (подробно)</summary><ul><li><code>fit_intercept</code>: добавлять ли свободный член b.</li><li><code>copy_X</code>: копирование матрицы X для безопасности операций.</li><li><code>positive</code>: ограничение коэффициентов неотрицательностью.</li><li><code>n_jobs</code>: параллелизация при некоторых конфигурациях.</li></ul></details>
+<details><summary>Интуиция использования</summary><p>Лучший интерпретируемый baseline для численной цели. Хороша при почти линейной зависимости и как контрольная точка для более сложных моделей.</p></details>
+<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
+    "fit_intercept": [True, False],
+    "positive": [False, True]
+}</code></pre></details>
+</section>
+
+<section class="panel" id="ridge"><h2>Ridge Regression</h2>
+<details><summary>Принцип работы коротко</summary><p>Линейная регрессия с L2-регуляризацией, уменьшающей величины коэффициентов.</p></details>
+<details><summary>Математическое обоснование подробно</summary><p>L = ||y - Xw||^2 + alpha * ||w||^2. Регуляризация снижает дисперсию и помогает при мультиколлинеарности. Аналитически: w = (X^T X + alpha I)^(-1) X^T y. При alpha=0 получаем обычную линейную регрессию.</p></details>
+<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+
+class RidgeFromScratch:
+    def __init__(self, alpha=1.0):
+        self.alpha = alpha
+
+    def fit(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        m = X.shape[1]
+        I = np.eye(m)
+        self.w = np.linalg.solve(X.T @ X + self.alpha * I, X.T @ y)
+        self.b = 0.0
+        return self
+
+    def predict(self, X):
+        X = np.asarray(X, dtype=float)
+        return X @ self.w + self.b</code></pre></details>
+<details><summary>Реализация sklearn</summary><pre><code>from sklearn.linear_model import Ridge
+
+model = Ridge(alpha=1.0)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre></details>
+<details><summary>Описание гиперпараметров sklearn (подробно)</summary><ul><li><code>alpha</code>: сила L2-регуляризации (чем больше, тем сильнее сжатие коэффициентов).</li><li><code>solver</code>: метод решения (<code>auto</code>, <code>svd</code>, <code>cholesky</code>, <code>sag</code>, <code>lbfgs</code>).</li><li><code>fit_intercept</code>: свободный член.</li><li><code>max_iter</code>, <code>tol</code>: критерии сходимости для итерационных решателей.</li></ul></details>
+<details><summary>Интуиция использования</summary><p>Выбирай, когда признаки коррелируют и обычная линейная регрессия нестабильна.</p></details>
+<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
+    "alpha": [0.01, 0.1, 1.0, 10.0, 100.0],
+    "solver": ["auto", "svd", "sag"],
+    "fit_intercept": [True, False]
+}</code></pre></details>
+</section>
+
+<section class="panel" id="lasso"><h2>Lasso</h2>
+<details><summary>Принцип работы коротко</summary><p>Линейная регрессия с L1-регуляризацией, которая зануляет часть коэффициентов.</p></details>
+<details><summary>Математическое обоснование подробно</summary><p>L = ||y-Xw||^2 + alpha * ||w||_1. L1 штраф создает разреженные решения и выполняет встроенный отбор признаков. Часто решается coordinate descent: обновляем по одному коэффициенту через soft-thresholding.</p></details>
+<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+
+class LassoFromScratch:
+    def __init__(self, alpha=0.1, n_iter=3000):
+        self.alpha = alpha
+        self.n_iter = n_iter
+
+    def fit(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        n, m = X.shape
+        self.w = np.zeros(m)
+        self.b = y.mean()
+        y_c = y - self.b
+
+        for _ in range(self.n_iter):
+            for j in range(m):
+                r = y_c - (X @ self.w) + X[:, j] * self.w[j]
+                rho = X[:, j] @ r
+                z = np.sum(X[:, j] ** 2)
+                if rho < -self.alpha / 2:
+                    self.w[j] = (rho + self.alpha / 2) / z
+                elif rho > self.alpha / 2:
+                    self.w[j] = (rho - self.alpha / 2) / z
+                else:
+                    self.w[j] = 0.0
+        return self
+
+    def predict(self, X):
+        X = np.asarray(X, dtype=float)
+        return X @ self.w + self.b</code></pre></details>
+<details><summary>Реализация sklearn</summary><pre><code>from sklearn.linear_model import Lasso
+
+model = Lasso(alpha=0.01, max_iter=5000)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre></details>
+<details><summary>Описание гиперпараметров sklearn (подробно)</summary><ul><li><code>alpha</code>: сила L1-регуляризации.</li><li><code>max_iter</code>, <code>tol</code>: сходимость coordinate descent.</li><li><code>selection</code>: порядок обновления координат (<code>cyclic</code>/<code>random</code>).</li><li><code>warm_start</code>: использовать предыдущее решение для ускорения.</li></ul></details>
+<details><summary>Интуиция использования</summary><p>Подходит, когда признаков много и нужна интерпретируемая модель с отбором важнейших факторов.</p></details>
+<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
+    "alpha": [1e-4, 1e-3, 1e-2, 1e-1],
+    "max_iter": [2000, 5000, 8000],
+    "selection": ["cyclic", "random"]
+}</code></pre></details>
+</section>
+
+<section class="panel" id="en"><h2>ElasticNet</h2>
+<details><summary>Принцип работы коротко</summary><p>Сочетает L1 и L2-регуляризацию, балансируя отбор признаков и устойчивость.</p></details>
+<details><summary>Математическое обоснование подробно</summary><p>L = ||y-Xw||^2 + alpha * (l1_ratio*||w||_1 + (1-l1_ratio)*||w||^2). При l1_ratio=1 это Lasso, при 0 - Ridge-подобный режим.</p></details>
+<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+
+class ElasticNetFromScratch:
+    def __init__(self, alpha=0.1, l1_ratio=0.5, lr=0.01, n_iter=4000):
+        self.alpha = alpha
+        self.l1_ratio = l1_ratio
+        self.lr = lr
+        self.n_iter = n_iter
+
+    def fit(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        n, m = X.shape
+        self.w = np.zeros(m)
+        self.b = 0.0
+        for _ in range(self.n_iter):
+            y_hat = X @ self.w + self.b
+            err = y_hat - y
+            grad_l2 = (1 - self.l1_ratio) * self.w
+            grad = (2 / n) * (X.T @ err) + self.alpha * grad_l2
+            self.w -= self.lr * grad
+            self.w = np.sign(self.w) * np.maximum(0, np.abs(self.w) - self.lr * self.alpha * self.l1_ratio)
+            self.b -= self.lr * (2 / n) * np.sum(err)
+        return self
+
+    def predict(self, X):
+        X = np.asarray(X, dtype=float)
+        return X @ self.w + self.b</code></pre></details>
+<details><summary>Реализация sklearn</summary><pre><code>from sklearn.linear_model import ElasticNet
+
+model = ElasticNet(alpha=0.01, l1_ratio=0.7, max_iter=5000)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre></details>
+<details><summary>Описание гиперпараметров sklearn (подробно)</summary><ul><li><code>alpha</code>: общая сила регуляризации.</li><li><code>l1_ratio</code>: доля L1 в регуляризации.</li><li><code>max_iter</code>, <code>tol</code>, <code>selection</code>, <code>warm_start</code>.</li></ul></details>
+<details><summary>Интуиция использования</summary><p>Полезен при группах коррелирующих признаков: мягче Lasso, но все еще способен занулять веса.</p></details>
+<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
+    "alpha": [1e-4, 1e-3, 1e-2, 1e-1],
+    "l1_ratio": [0.1, 0.3, 0.5, 0.7, 0.9],
+    "max_iter": [3000, 5000, 8000]
+}</code></pre></details>
+</section>
+
+<section class="panel" id="rf"><h2>RandomForestRegressor</h2>
+<details><summary>Принцип работы коротко</summary><p>Ансамбль деревьев регрессии на бутстрэп-выборках, финальный прогноз - среднее прогнозов деревьев.</p></details>
+<details><summary>Математическое обоснование подробно</summary><p>Каждое дерево минимизирует внутрилетсевую дисперсию сплитов, ансамблирование снижает variance. Идея: E[mean(tree)] сохраняет смещение, но сильно уменьшает дисперсию при слабой корреляции деревьев.</p></details>
+<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+
+class DecisionStumpReg:
+    def fit(self, X, y):
+        best_f, best_t, best_loss = None, None, np.inf
+        n, m = X.shape
+        for f in range(m):
+            for t in np.unique(X[:, f]):
+                l = X[:, f] <= t
+                r = ~l
+                if l.sum() == 0 or r.sum() == 0:
+                    continue
+                yl, yr = y[l], y[r]
+                loss = ((yl - yl.mean()) ** 2).sum() + ((yr - yr.mean()) ** 2).sum()
+                if loss < best_loss:
+                    best_loss, best_f, best_t = loss, f, t
+        self.f, self.t = best_f, best_t
+        l = X[:, self.f] <= self.t
+        r = ~l
+        self.left_val = y[l].mean()
+        self.right_val = y[r].mean()
+
+    def predict(self, X):
+        return np.where(X[:, self.f] <= self.t, self.left_val, self.right_val)
+
+class RandomForestRegressorFromScratch:
+    def __init__(self, n_estimators=100, random_state=42):
+        self.n_estimators = n_estimators
+        self.rng = np.random.default_rng(random_state)
+
+    def fit(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        n = len(X)
+        self.trees = []
+        for _ in range(self.n_estimators):
+            idx = self.rng.integers(0, n, n)
+            tree = DecisionStumpReg()
+            tree.fit(X[idx], y[idx])
+            self.trees.append(tree)
+        return self
+
+    def predict(self, X):
+        X = np.asarray(X, dtype=float)
+        preds = np.array([t.predict(X) for t in self.trees])
+        return preds.mean(axis=0)</code></pre></details>
+<details><summary>Реализация sklearn</summary><pre><code>from sklearn.ensemble import RandomForestRegressor
+
+model = RandomForestRegressor(n_estimators=300, random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre></details>
+<details><summary>Описание гиперпараметров sklearn (подробно)</summary><ul><li><code>n_estimators</code>: количество деревьев.</li><li><code>max_depth</code>, <code>min_samples_split</code>, <code>min_samples_leaf</code>: контроль сложности дерева.</li><li><code>max_features</code>: сколько признаков рассматривать при сплите.</li><li><code>bootstrap</code>, <code>oob_score</code>: бутстрэп и OOB-валидация.</li><li><code>criterion</code>: функция качества сплита (<code>squared_error</code>, <code>absolute_error</code>).</li></ul></details>
+<details><summary>Интуиция использования</summary><p>Отличный выбор для нелинейной регрессии на табличных данных с минимальной инженерией признаков.</p></details>
+<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
+    "n_estimators": [100, 200, 400],
+    "max_depth": [None, 8, 16, 24],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4],
+    "max_features": ["sqrt", "log2", 1.0],
+    "bootstrap": [True, False]
+}</code></pre></details>
+</section>
+
+</main></body></html>

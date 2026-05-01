@@ -1,1 +1,42 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Трансформер | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="panel"><h1>Трансформер сеть</h1></section><section class="panel"><h2>Encoder-based Transformer</h2><details><summary>Принцип работы коротко</summary><p>Использует self-attention, чтобы каждый токен видел контекст всей последовательности.</p></details><details><summary>Математическое обоснование подробно</summary><p><code>Attention(Q,K,V)=softmax(QK^T/sqrt(d_k))V</code>, multi-head attention объединяет несколько проекций внимания.</p></details><details><summary>Собственная реализация</summary><pre><code># NumPy/PyTorch: projection Q,K,V -> attention -> FFN -> residual + norm</code></pre></details><details><summary>Реализация sklearn</summary><pre><code># В sklearn нет нативного Transformer; обычно PyTorch/HuggingFace.</code></pre></details><details><summary>Описание гиперпараметров</summary><p><code>d_model</code>, <code>num_heads</code>, <code>num_layers</code>, <code>d_ff</code>, <code>dropout</code>, <code>lr</code>.</p></details><details><summary>Интуиция использования</summary><p>Для NLP и мультимодальных задач, когда важны длинные зависимости.</p></details><details><summary>Сетка гиперпараметров для гридсёрч</summary><pre><code>{"d_model":[128,256,512],"num_heads":[4,8],"num_layers":[2,4,6],"dropout":[0.1,0.2],"lr":[1e-4,3e-4,1e-3]}</code></pre></details></section></main></body></html>
+<!doctype html><html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Трансформер | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head><body><main class="wrap"><a href="../index.html">← На главную</a><section class="hero"><h1>Трансформер</h1></section><section class="panel"><h2>Encoder Transformer для классификации</h2><details><summary>Принцип работы коротко</summary><p>Self-attention позволяет каждому токену учитывать весь контекст последовательности на каждом слое.</p></details><details><summary>Математическое обоснование</summary><pre><code>Scaled dot-product attention:
+Q = X W_Q, K = X W_K, V = X W_V
+Attention(Q, K, V) = softmax( (Q K^T) / sqrt(d_k) ) V
+
+Multi-head:
+head_i = Attention(Q_i, K_i, V_i)
+MHA(X) = Concat(head_1, ..., head_h) W_O
+
+Encoder block:
+X1 = LayerNorm(X + MHA(X))
+X2 = LayerNorm(X1 + FFN(X1))
+
+Loss:
+L = CrossEntropy(classifier(X_cls), y_true)</code></pre></details><details><summary>Реализация PyTorch</summary><pre><code>import torch
+import torch.nn as nn
+
+class TransformerClassifier(nn.Module):
+    def __init__(self, vocab_size, d_model=128, nhead=4, num_layers=2, dim_ff=256, num_classes=2, max_len=512):
+        super().__init__()
+        self.token_emb = nn.Embedding(vocab_size, d_model)
+        self.pos_emb = nn.Embedding(max_len, d_model)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=dim_ff,
+            dropout=0.1,
+            batch_first=True
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.head = nn.Linear(d_model, num_classes)
+
+    def forward(self, x):
+        bsz, seq_len = x.shape
+        pos = torch.arange(seq_len, device=x.device).unsqueeze(0).expand(bsz, seq_len)
+        h = self.token_emb(x) + self.pos_emb(pos)
+        h = self.encoder(h)
+        cls = h[:, 0, :]
+        return self.head(cls)
+
+model = TransformerClassifier(vocab_size=30000, d_model=256, nhead=8, num_layers=4, num_classes=3)
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-2)</code></pre></details><details><summary>Описание параметров реализации PyTorch</summary><ul><li><code>vocab_size</code>: размер словаря токенов.</li><li><code>d_model</code>: размер эмбеддинга и внутреннего представления.</li><li><code>nhead</code>: число attention-голов (должно делить <code>d_model</code>).</li><li><code>num_layers</code>: глубина энкодера.</li><li><code>dim_feedforward</code>: ширина FFN блока.</li><li><code>max_len</code>: максимальная длина последовательности для positional embedding.</li><li><code>lr</code>, <code>weight_decay</code>, scheduler/warmup: критичны для стабильного обучения.</li></ul></details><details><summary>Интуиция использования</summary><p>Лучший выбор для задач с длинным контекстом и сложными зависимостями между токенами (NLP, код, мультимодальные последовательности).</p></details></section></main></body></html>

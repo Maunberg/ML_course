@@ -1,3 +1,89 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>ML Course</title><link rel="stylesheet" href="./assets/styles.css"/></head>
-<body><main class="wrap"><section class="hero"><h1>ML Course</h1><p>Курс по классическому ML и нейросетям: теория, математика, код и настройка гиперпараметров.</p></section><section class="grid"><article class="panel"><h2>Классические модели</h2><ul><li><a href="./classic/classification.html">Классификация</a></li><li><a href="./classic/regression.html">Регрессия</a></li><li><a href="./classic/clustering.html">Кластеризация</a></li><li><a href="./classic/dim-reduction.html">Сокращение размерности</a></li><li><a href="./classic/ensembles.html">Ансамбли</a></li></ul></article><article class="panel"><h2>Нейронные сети</h2><ul><li><a href="./neural/fcn.html">Полносвязная сеть</a></li><li><a href="./neural/cnn.html">Сверточная сеть</a></li><li><a href="./neural/rnn.html">Рекуррентная сеть</a></li><li><a href="./neural/transformer.html">Трансформер сеть</a></li></ul></article></section></main></body></html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ML Course</title>
+  <link rel="stylesheet" href="./assets/styles.css"/>
+  <style>
+    .home-hero {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .home-hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -120px -120px auto;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(19,94,83,.22), rgba(19,94,83,0));
+      pointer-events: none;
+    }
+    .subtitle {
+      margin-top: .7rem;
+      color: var(--muted);
+      max-width: 820px;
+    }
+    .stack {
+      display: grid;
+      gap: 1rem;
+    }
+    .section-title {
+      display: inline-block;
+      font-weight: 700;
+      letter-spacing: .2px;
+      color: var(--primary);
+      background: rgba(186,83,40,.1);
+      border: 1px solid rgba(186,83,40,.2);
+      border-radius: 999px;
+      padding: .3rem .7rem;
+      margin-bottom: .55rem;
+    }
+    .panel ul {
+      margin: .3rem 0 0;
+      padding-left: 1.1rem;
+    }
+    .panel li { margin: .35rem 0; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero home-hero">
+      <h1>ML Course</h1>
+      <p class="subtitle">Навигация по курсу с теорией, математикой и кодом. Начинай с классических алгоритмов, затем переходи к нейросетям.</p>
+      <div class="chips">
+        <a href="./classic/classification.html">Классификация</a>
+        <a href="./classic/regression.html">Регрессия</a>
+        <a href="./neural/transformer.html">Трансформеры</a>
+      </div>
+    </section>
+
+    <section class="stack">
+      <article class="panel">
+        <div class="section-title">Классическое ML</div>
+        <h2>Классические модели</h2>
+        <ul>
+          <li><a href="./classic/classification.html">Классификация</a></li>
+          <li><a href="./classic/regression.html">Регрессия</a></li>
+          <li><a href="./classic/clustering.html">Кластеризация</a></li>
+          <li><a href="./classic/dim-reduction.html">Сокращение размерности</a></li>
+          <li><a href="./classic/ensembles.html">Ансамбли</a></li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <div class="section-title">Нейронные сети</div>
+        <h2>Deep Learning</h2>
+        <ul>
+          <li><a href="./neural/fcn.html">Полносвязная сеть</a></li>
+          <li><a href="./neural/cnn.html">Сверточная сеть</a></li>
+          <li><a href="./neural/rnn.html">Рекуррентная сеть</a></li>
+          <li><a href="./neural/transformer.html">Трансформер сеть</a></li>
+        </ul>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
