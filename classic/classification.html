@@ -1,114 +1,606 @@
-<!doctype html>
-<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Классификация | ML Course</title><link rel="stylesheet" href="../assets/styles.css"/></head>
-<body><main class="wrap"><a href="../index.html">← На главную</a><section class="hero"><h1>Классификация (подробный разбор)</h1><p>Для каждой модели: как работает, как обучается, пример, полная реализация и расширенные гиперпараметры.</p><div class="chips"><a href="#nb">NB</a><a href="#knn">KNN</a><a href="#dt">DT</a><a href="#rf">RF</a><a href="#lr">LR</a></div></section>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Классификация — Naive Bayes, KNN, Logistic Regression, Decision Tree</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel-2: #0f1530;
+      --text: #e9eefc;
+      --muted: #a9b4d0;
+      --accent: #6ea8fe;
+      --accent-2: #8ef0c7;
+      --border: #263053;
+      --code: #0a0f22;
+      --warn: #ffd166;
+      --good: #95f9c3;
+      --bad: #ff9f9f;
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #0a0f1f 0%, #0b1020 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .wrap { max-width: 1220px; margin: 0 auto; padding: 28px 20px 60px; }
+    .hero {
+      background: radial-gradient(circle at top right, rgba(110,168,254,.18), transparent 30%),
+                  radial-gradient(circle at top left, rgba(142,240,199,.12), transparent 25%),
+                  var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+    h1, h2, h3 { line-height: 1.2; margin: 0 0 14px; }
+    h1 { font-size: 2.2rem; }
+    h2 { font-size: 1.7rem; margin-top: 8px; }
+    h3 { font-size: 1.12rem; color: var(--accent-2); margin-top: 20px; }
+    p { margin: 10px 0; }
+    .muted { color: var(--muted); }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .chip {
+      display: inline-block;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(110,168,254,.1);
+      color: var(--text);
+      border: 1px solid rgba(110,168,254,.25);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+    .sidebar {
+      position: sticky; top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .sidebar a {
+      display: block; color: var(--text); text-decoration: none;
+      padding: 10px 12px; border-radius: 12px; margin-bottom: 8px;
+      background: transparent; border: 1px solid transparent;
+    }
+    .sidebar a:hover { background: rgba(255,255,255,.03); border-color: var(--border); }
+    .content { display: grid; gap: 18px; }
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+    .card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    pre {
+      margin: 12px 0;
+      padding: 16px;
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.92rem;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    ul { margin: 10px 0 0 20px; }
+    .formula {
+      background: rgba(110,168,254,.08);
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .pros { border-left-color: var(--good); }
+    .cons { border-left-color: var(--bad); }
+    .note { border-left-color: var(--warn); }
+    .table {
+      width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .95rem;
+      overflow: hidden; border-radius: 12px;
+    }
+    .table th, .table td { border: 1px solid var(--border); padding: 10px 12px; vertical-align: top; }
+    .table th { background: rgba(255,255,255,.04); text-align: left; }
+    .small { font-size: .92rem; }
+    .footer { text-align: center; color: var(--muted); padding-top: 16px; }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Классификация: подробный разбор 4 базовых моделей</h1>
+      <p class="muted">На странице собраны: <b>Naive Bayes</b>, <b>KNN</b>, <b>Logistic Regression</b> и <b>Decision Tree</b>. Для каждой модели есть короткое описание, математика, реализация с нуля, реализация в <code>sklearn</code>, гиперпараметры для <code>GridSearchCV</code>, а также плюсы, минусы и рекомендации по применению.</p>
+      <div class="chips">
+        <a class="chip" href="#nb">Naive Bayes</a>
+        <a class="chip" href="#knn">KNN</a>
+        <a class="chip" href="#lr">Logistic Regression</a>
+        <a class="chip" href="#dt">Decision Tree</a>
+      </div>
+    </section>
 
-<section class="panel" id="nb"><h2>Gaussian Naive Bayes</h2>
-<details><summary>Принцип работы коротко</summary><p>Оцениваем вероятность класса по формуле Байеса и выбираем класс с максимальным апостериорным лог-скором.</p></details>
-<details><summary>Математическое обоснование подробно</summary><p><code>P(y|x) ∝ P(y)∏_j P(x_j|y)</code>. Для непрерывных признаков часто предполагается гауссовская плотность: <code>P(x_j|y=c)=N(μ_{cj},σ^2_{cj})</code>. На практике считаем логарифмы: <code>log P(y=c)+Σ_j log N(x_j;μ_{cj},σ^2_{cj})</code>. Обучение: оценка <code>μ,σ^2</code> и приоров <code>P(y)</code> по выборке MLE-оценками. Пример: если у класса 1 среднее признака выше, то точка с высоким значением признака даст более высокий лог-скор для класса 1.</p></details>
-<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+    <div class="layout">
+      <aside class="sidebar">
+        <h3>Навигация</h3>
+        <a href="#nb">1. Naive Bayes</a>
+        <a href="#knn">2. K-Nearest Neighbors</a>
+        <a href="#lr">3. Logistic Regression</a>
+        <a href="#dt">4. Decision Tree</a>
+        <a href="#compare">Сравнение моделей</a>
+      </aside>
 
-class GaussianNBFromScratch:
+      <main class="content">
+        <section class="section" id="nb">
+          <h2>1. Naive Bayes</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Коротко: как работает</h3>
+              <p>Модель считает вероятность класса по формуле Байеса и выбирает класс с максимальной апостериорной вероятностью. Главная идея — признаки считаются <b>условно независимыми</b> внутри класса.</p>
+            </div>
+            <div class="card">
+              <h3>Когда полезен</h3>
+              <p>Очень быстрый baseline. Особенно хорош для <b>текста</b>, разреженных матриц, простых задач классификации и небольших обучающих выборок.</p>
+            </div>
+          </div>
+
+          <h3>Подробное математическое объяснение</h3>
+          <div class="formula">P(y=c \mid x)=\frac{P(x \mid y=c)P(y=c)}{P(x)}</div>
+          <p>Так как <code>P(x)</code> одинаково для всех классов, при сравнении классов можно использовать:</p>
+          <div class="formula">P(y=c \mid x) \propto P(y=c)P(x \mid y=c)</div>
+          <p>Наивное предположение независимости:</p>
+          <div class="formula">P(x \mid y=c)=\prod_{j=1}^{d} P(x_j \mid y=c)</div>
+          <p>Тогда итоговый скор:</p>
+          <div class="formula">P(y=c \mid x) \propto P(y=c)\prod_{j=1}^{d} P(x_j \mid y=c)</div>
+          <p>Для численной устойчивости почти всегда переходят к логарифмам:</p>
+          <div class="formula">\log P(y=c \mid x) = \log P(y=c)+\sum_{j=1}^{d}\log P(x_j \mid y=c)+const</div>
+
+          <h3>Варианты Naive Bayes</h3>
+          <table class="table small">
+            <tr><th>Вариант</th><th>Для каких данных</th><th>Когда использовать</th></tr>
+            <tr><td><code>GaussianNB</code></td><td>Непрерывные признаки</td><td>Когда признаки похожи на нормально распределённые: рост, вес, температура, численные сенсоры</td></tr>
+            <tr><td><code>MultinomialNB</code></td><td>Счётчики, частоты</td><td>Текст, мешок слов, количество появлений токенов</td></tr>
+            <tr><td><code>BernoulliNB</code></td><td>Бинарные признаки 0/1</td><td>Есть/нет слова, присутствует/отсутствует событие</td></tr>
+            <tr><td><code>ComplementNB</code></td><td>Несбалансированные текстовые задачи</td><td>Когда классы дисбалансны и обычный MultinomialNB работает хуже</td></tr>
+          </table>
+
+          <h3>Gaussian Naive Bayes: математика</h3>
+          <p>Если признак непрерывный, часто предполагают нормальное распределение внутри класса:</p>
+          <div class="formula">P(x_j \mid y=c)=\frac{1}{\sqrt{2\pi\sigma_{cj}^2}}\exp\left(-\frac{(x_j-\mu_{cj})^2}{2\sigma_{cj}^2}\right)</div>
+          <p>Параметры оцениваются по обучающей выборке:</p>
+          <div class="formula">\mu_{cj}=\frac{1}{N_c}\sum_{i:y_i=c} x_{ij}, \quad \sigma^2_{cj}=\frac{1}{N_c}\sum_{i:y_i=c}(x_{ij}-\mu_{cj})^2</div>
+          <div class="formula">P(y=c)=\frac{N_c}{N}</div>
+
+          <h3>Собственная реализация с объяснением</h3>
+          <p>Ниже реализация Gaussian Naive Bayes. Что делает модель:</p>
+          <ul>
+            <li>на этапе <code>fit</code> считает средние, дисперсии и априорные вероятности классов;</li>
+            <li>на этапе <code>predict</code> считает логарифм правдоподобия для каждого класса;</li>
+            <li>выбирает класс с максимальным значением.</li>
+          </ul>
+          <pre><code>import numpy as np
+
+class GaussianNaiveBayes:
     def __init__(self, var_smoothing=1e-9):
         self.var_smoothing = var_smoothing
+        self.classes_ = None
+        self.means_ = None
+        self.vars_ = None
+        self.priors_ = None
 
     def fit(self, X, y):
         X = np.asarray(X, dtype=float)
         y = np.asarray(y)
-        self.classes_ = np.unique(y)
+
         n_samples, n_features = X.shape
-        self.class_log_prior_ = np.zeros(len(self.classes_))
-        self.theta_ = np.zeros((len(self.classes_), n_features))
-        self.var_ = np.zeros((len(self.classes_), n_features))
+        self.classes_ = np.unique(y)
+        n_classes = len(self.classes_)
 
-        for i, c in enumerate(self.classes_):
-            Xc = X[y == c]
-            self.class_log_prior_[i] = np.log(len(Xc) / n_samples)
-            self.theta_[i, :] = Xc.mean(axis=0)
-            self.var_[i, :] = Xc.var(axis=0) + self.var_smoothing
-        return self
+        self.means_ = np.zeros((n_classes, n_features))
+        self.vars_ = np.zeros((n_classes, n_features))
+        self.priors_ = np.zeros(n_classes)
 
-    def _joint_log_likelihood(self, X):
-        X = np.asarray(X, dtype=float)
-        jll = []
-        for i in range(len(self.classes_)):
-            mean = self.theta_[i]
-            var = self.var_[i]
-            log_prob = -0.5 * np.sum(np.log(2.0 * np.pi * var))
-            log_prob -= 0.5 * np.sum(((X - mean) ** 2) / var, axis=1)
-            jll.append(self.class_log_prior_[i] + log_prob)
-        return np.vstack(jll).T
+        for idx, c in enumerate(self.classes_):
+            X_c = X[y == c]
+            self.means_[idx] = X_c.mean(axis=0)
+            self.vars_[idx] = X_c.var(axis=0) + self.var_smoothing
+            self.priors_[idx] = X_c.shape[0] / n_samples
+
+    def _log_likelihood(self, class_idx, x):
+        mean = self.means_[class_idx]
+        var = self.vars_[class_idx]
+        prior = np.log(self.priors_[class_idx])
+
+        log_prob = -0.5 * np.sum(np.log(2 * np.pi * var))
+        log_prob -= 0.5 * np.sum(((x - mean) ** 2) / var)
+
+        return prior + log_prob
 
     def predict(self, X):
-        jll = self._joint_log_likelihood(X)
-        return self.classes_[np.argmax(jll, axis=1)]
+        X = np.asarray(X, dtype=float)
+        y_pred = []
 
-    def predict_proba(self, X):
-        jll = self._joint_log_likelihood(X)
-        jll = jll - np.max(jll, axis=1, keepdims=True)
-        probs = np.exp(jll)
-        probs /= probs.sum(axis=1, keepdims=True)
-        return probs</code></pre></details>
-<details><summary>Реализация sklearn</summary><pre><code>from sklearn.naive_bayes import GaussianNB
+        for x in X:
+            posteriors = [self._log_likelihood(i, x) for i in range(len(self.classes_))]
+            y_pred.append(self.classes_[np.argmax(posteriors)])
+
+        return np.array(y_pred)</code></pre>
+
+          <h3>Реализация sklearn</h3>
+          <pre><code>from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB, ComplementNB
+
 model = GaussianNB(var_smoothing=1e-9)
 model.fit(X_train, y_train)
-y_pred = model.predict(X_test)</code></pre></details>
-<details><summary>Описание гиперпараметров (максимально подробно)</summary><ul><li><code>var_smoothing</code>: добавка к дисперсии; стабилизирует вычисления, особенно при почти константных признаках.</li><li><code>priors</code>: ручная установка априорных вероятностей классов; полезно при известном реальном дисбалансе.</li><li>Практика: сначала стандартизуй признаки и подбирай <code>var_smoothing</code> лог-шкалой.</li></ul></details>
-<details><summary>Интуиция использования</summary><p>Отличный быстрый baseline и сильный выбор для текстовых/разреженных задач. Ограничение: независимость признаков часто нарушается.</p></details>
-<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
-    "var_smoothing": np.logspace(-12, -6, 13)
-}</code></pre></details></section>
+y_pred = model.predict(X_test)</code></pre>
 
-<section class="panel" id="knn"><h2>K-Nearest Neighbors</h2>
-<details><summary>Принцип работы коротко</summary><p>Новый объект получает класс по большинству среди <code>k</code> ближайших объектов train-набора.</p></details>
-<details><summary>Математическое обоснование подробно</summary><p>Для точки <code>x</code> ищем множество соседей <code>N_k(x)</code> по метрике <code>d</code>. Решение: <code>ŷ=argmax_c Σ_{i∈N_k(x)} w_i I(y_i=c)</code>, где <code>w_i</code> - вес (равный или обратный расстоянию). Обучения параметров как в линейных моделях нет: модель “учится” запоминанием train-данных. Важны масштабирование и выбор метрики.</p></details>
-<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+          <h3>Гиперпараметры sklearn</h3>
+          <table class="table small">
+            <tr><th>Параметр</th><th>Что делает</th><th>Когда важен</th></tr>
+            <tr><td><code>var_smoothing</code></td><td>Добавляет маленькую константу к дисперсии</td><td>Если признак почти константный или возникают численные проблемы</td></tr>
+            <tr><td><code>priors</code></td><td>Задаёт априорные вероятности классов вручную</td><td>Если известен реальный дисбаланс классов</td></tr>
+            <tr><td><code>alpha</code></td><td>Сглаживание в Multinomial/Bernoulli/Complement</td><td>Важно для текста и счётчиков</td></tr>
+            <tr><td><code>fit_prior</code></td><td>Оценивать ли априоры по данным</td><td>Если не хочешь использовать частоты классов из train</td></tr>
+            <tr><td><code>binarize</code></td><td>Порог бинаризации для BernoulliNB</td><td>Когда признаки надо перевести в 0/1</td></tr>
+          </table>
+
+          <h3>Варианты словарей для GridSearchCV</h3>
+          <pre><code>import numpy as np
+
+param_grid_gaussian = {
+    "var_smoothing": np.logspace(-12, -6, 13)
+}
+
+param_grid_multinomial = {
+    "alpha": [0.01, 0.1, 0.5, 1.0, 2.0],
+    "fit_prior": [True, False]
+}
+
+param_grid_bernoulli = {
+    "alpha": [0.01, 0.1, 0.5, 1.0, 2.0],
+    "fit_prior": [True, False],
+    "binarize": [0.0, 0.5, 1.0]
+}
+
+param_grid_complement = {
+    "alpha": [0.01, 0.1, 0.5, 1.0, 2.0],
+    "fit_prior": [True, False],
+    "norm": [True, False]
+}</code></pre>
+
+          <div class="grid-2">
+            <div class="card formula pros">
+              <b>Плюсы</b><br>
+              Очень быстрый, простая математика, мало данных для старта, хорошо работает на тексте, устойчив как baseline.
+            </div>
+            <div class="card formula cons">
+              <b>Минусы</b><br>
+              Предположение независимости признаков часто неверно, может проигрывать более сложным моделям, вероятности не всегда калиброваны.
+            </div>
+          </div>
+          <div class="card note">
+            <b>Сколько данных нужно:</b> может работать даже на малых выборках, но особенно силён на средних и больших текстовых датасетах.<br>
+            <b>Лучшие задачи:</b> классификация текста, спам-фильтрация, простые многоклассовые задачи, быстрый baseline.
+          </div>
+        </section>
+
+        <section class="section" id="knn">
+          <h2>2. K-Nearest Neighbors (KNN)</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Коротко: как работает</h3>
+              <p>Для нового объекта ищем <b>k ближайших соседей</b> в обучающей выборке и выбираем класс по большинству голосов или по взвешенному голосованию.</p>
+            </div>
+            <div class="card">
+              <h3>Главная идея</h3>
+              <p>Похожие объекты должны иметь похожие метки. KNN ничего не обучает в привычном смысле — он просто запоминает train-набор.</p>
+            </div>
+          </div>
+
+          <h3>Подробное математическое объяснение</h3>
+          <p>Для точки <code>x</code> ищется множество ближайших соседей <code>N_k(x)</code> по метрике расстояния.</p>
+          <div class="formula">\hat{y}=\arg\max_c \sum_{i \in N_k(x)} w_i \cdot I(y_i=c)</div>
+          <p>Если веса одинаковые, то <code>w_i = 1</code>. Если используется взвешивание по расстоянию:</p>
+          <div class="formula">w_i = \frac{1}{d(x, x_i) + \varepsilon}</div>
+          <p>Часто используется расстояние Минковского:</p>
+          <div class="formula">d(x, z)=\left(\sum_{j=1}^{d}|x_j-z_j|^p\right)^{1/p}</div>
+          <ul>
+            <li><code>p=1</code> — Manhattan distance</li>
+            <li><code>p=2</code> — Euclidean distance</li>
+          </ul>
+          <p>В KNN нет явной функции потерь и градиентного спуска: всё обучение — это сохранение выборки. Поэтому он очень прост, но предсказание может быть медленным.</p>
+
+          <h3>Собственная реализация с объяснением</h3>
+          <pre><code>import numpy as np
 from collections import Counter
 
-class KNNClassifierFromScratch:
+class KNNClassifier:
     def __init__(self, n_neighbors=5, weights="uniform", p=2):
         self.n_neighbors = n_neighbors
         self.weights = weights
         self.p = p
+        self.X_train = None
+        self.y_train = None
 
     def fit(self, X, y):
         self.X_train = np.asarray(X, dtype=float)
         self.y_train = np.asarray(y)
-        return self
 
-    def _distance(self, x):
-        return np.sum(np.abs(self.X_train - x) ** self.p, axis=1) ** (1 / self.p)
+    def _distance(self, x1, x2):
+        return np.sum(np.abs(x1 - x2) ** self.p) ** (1 / self.p)
 
     def predict(self, X):
         X = np.asarray(X, dtype=float)
-        preds = []
+        predictions = []
+
         for x in X:
-            dists = self._distance(x)
-            idx = np.argsort(dists)[:self.n_neighbors]
-            labels = self.y_train[idx]
+            distances = np.array([self._distance(x, x_train) for x_train in self.X_train])
+            k_idx = np.argsort(distances)[:self.n_neighbors]
+            k_labels = self.y_train[k_idx]
+
             if self.weights == "distance":
-                w = 1.0 / (dists[idx] + 1e-12)
-                score = {}
-                for lbl, ww in zip(labels, w):
-                    score[lbl] = score.get(lbl, 0.0) + ww
-                preds.append(max(score, key=score.get))
+                k_distances = distances[k_idx]
+                weights = 1 / (k_distances + 1e-12)
+                scores = {}
+                for label, w in zip(k_labels, weights):
+                    scores[label] = scores.get(label, 0) + w
+                pred = max(scores, key=scores.get)
             else:
-                preds.append(Counter(labels).most_common(1)[0][0])
-        return np.array(preds)</code></pre></details>
-<details><summary>Реализация sklearn</summary><pre><code>from sklearn.neighbors import KNeighborsClassifier
-model = KNeighborsClassifier(n_neighbors=7, metric="minkowski", p=2, weights="distance")
+                pred = Counter(k_labels).most_common(1)[0][0]
+
+            predictions.append(pred)
+
+        return np.array(predictions)</code></pre>
+
+          <h3>Что здесь происходит</h3>
+          <ul>
+            <li><code>fit</code> просто сохраняет обучающие данные;</li>
+            <li>для каждого нового объекта считаются расстояния до всех объектов train;</li>
+            <li>выбираются <code>k</code> ближайших;</li>
+            <li>итоговый класс определяется голосованием.</li>
+          </ul>
+
+          <h3>Реализация sklearn</h3>
+          <pre><code>from sklearn.neighbors import KNeighborsClassifier
+
+model = KNeighborsClassifier(
+    n_neighbors=7,
+    weights="distance",
+    metric="minkowski",
+    p=2
+)
+
 model.fit(X_train, y_train)
-y_pred = model.predict(X_test)</code></pre></details>
-<details><summary>Описание гиперпараметров (максимально подробно)</summary><ul><li><code>n_neighbors</code>: смещение/дисперсия; маленький <code>k</code> -> шумочувствительность, большой <code>k</code> -> сглаживание.</li><li><code>weights</code>: <code>uniform</code> или <code>distance</code>; второй вариант полезен, когда плотность данных неоднородна.</li><li><code>metric</code>, <code>p</code>: геометрия пространства; для sparse/высоких размерностей выбор критичен.</li><li><code>algorithm</code>: <code>auto/ball_tree/kd_tree/brute</code>; влияет на скорость, не на качество.</li><li><code>leaf_size</code>: баланс памяти и скорости в деревьях поиска соседей.</li></ul></details>
-<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
+y_pred = model.predict(X_test)</code></pre>
+
+          <h3>Гиперпараметры sklearn</h3>
+          <table class="table small">
+            <tr><th>Параметр</th><th>Что делает</th><th>Комментарий</th></tr>
+            <tr><td><code>n_neighbors</code></td><td>Количество соседей</td><td>Малый k — чувствительность к шуму, большой k — сильное сглаживание</td></tr>
+            <tr><td><code>weights</code></td><td><code>uniform</code> или <code>distance</code></td><td>Distance полезен, если важнее ближайшие точки</td></tr>
+            <tr><td><code>metric</code></td><td>Метрика расстояния</td><td>Чаще всего euclidean, manhattan, minkowski</td></tr>
+            <tr><td><code>p</code></td><td>Степень в Minkowski</td><td><code>p=1</code> Manhattan, <code>p=2</code> Euclidean</td></tr>
+            <tr><td><code>algorithm</code></td><td>Способ поиска соседей</td><td><code>auto</code>, <code>kd_tree</code>, <code>ball_tree</code>, <code>brute</code></td></tr>
+            <tr><td><code>leaf_size</code></td><td>Размер листа в деревьях поиска</td><td>Влияет на скорость и память</td></tr>
+          </table>
+
+          <h3>Вариант словаря для GridSearchCV</h3>
+          <pre><code>param_grid = {
     "n_neighbors": [3, 5, 7, 9, 11, 15],
     "weights": ["uniform", "distance"],
     "metric": ["euclidean", "manhattan", "minkowski"],
-    "p": [1, 2]
-}</code></pre></details></section>
+    "p": [1, 2],
+    "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
+    "leaf_size": [20, 30, 40]
+}</code></pre>
 
-<section class="panel" id="dt"><h2>Decision Tree</h2>
-<details><summary>Математическое обоснование подробно</summary><p>На каждом узле выбираем сплит, максимизирующий уменьшение неоднородности: <code>ΔI = I(parent)-Σ(n_j/n)I(child_j)</code>. Для классификации обычно <code>Gini = 1-Σp_c^2</code> или <code>Entropy = -Σp_c log p_c</code>. Обучение - жадное рекурсивное построение дерева до критериев остановки.</p></details>
-<details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+          <div class="grid-2">
+            <div class="card formula pros">
+              <b>Плюсы</b><br>
+              Очень простой, не требует долгого обучения, хорошо ловит нелинейные границы, понятная логика работы.
+            </div>
+            <div class="card formula cons">
+              <b>Минусы</b><br>
+              Медленное предсказание на больших данных, чувствителен к масштабу признаков и шуму, плохо работает в очень высокой размерности.
+            </div>
+          </div>
+          <div class="card note">
+            <b>Сколько данных нужно:</b> хорошо работает на малых и средних выборках; на очень больших датасетах становится дорогим по времени и памяти.<br>
+            <b>Лучшие задачи:</b> геометрически локальные задачи, распознавание по похожести, простые нелинейные классификации.<br>
+            <b>Важно:</b> почти всегда нужно делать масштабирование признаков (<code>StandardScaler</code> или <code>MinMaxScaler</code>).
+          </div>
+        </section>
+
+        <section class="section" id="lr">
+          <h2>3. Logistic Regression</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Коротко: как работает</h3>
+              <p>Логистическая регрессия строит линейную комбинацию признаков, потом пропускает её через сигмоиду и получает вероятность класса.</p>
+            </div>
+            <div class="card">
+              <h3>Интуиция</h3>
+              <p>Модель пытается провести гиперплоскость, разделяющую классы, и сделать уверенные вероятностные предсказания.</p>
+            </div>
+          </div>
+
+          <h3>Математическое объяснение</h3>
+          <div class="formula">z = Xw + b</div>
+          <div class="formula">\sigma(z)=\frac{1}{1+e^{-z}}</div>
+          <div class="formula">\hat{y}=\sigma(Xw+b)</div>
+          <p>Функция потерь для бинарного случая:</p>
+          <div class="formula">L = -\frac{1}{n}\sum_{i=1}^{n}\left[y_i\log(\hat{y}_i)+(1-y_i)\log(1-\hat{y}_i)\right]</div>
+          <p>Градиенты:</p>
+          <div class="formula">\frac{\partial L}{\partial w}=\frac{1}{n}X^T(\hat{y}-y), \quad \frac{\partial L}{\partial b}=\frac{1}{n}\sum_{i=1}^{n}(\hat{y}_i-y_i)</div>
+          <p>Обновление параметров:</p>
+          <div class="formula">w := w - \eta \frac{\partial L}{\partial w}, \quad b := b - \eta \frac{\partial L}{\partial b}</div>
+          <p>Разделяющая граница:</p>
+          <div class="formula">Xw+b=0</div>
+
+          <h3>Собственная реализация с объяснением</h3>
+          <pre><code>import numpy as np
+
+class LogisticRegressionCustom:
+    def __init__(self, lr=0.01, n_iters=1000):
+        self.lr = lr
+        self.n_iters = n_iters
+        self.w = None
+        self.b = None
+
+    def _sigmoid(self, z):
+        return 1 / (1 + np.exp(-z))
+
+    def fit(self, X, y):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        n_samples, n_features = X.shape
+
+        self.w = np.zeros(n_features)
+        self.b = 0.0
+
+        for _ in range(self.n_iters):
+            linear_model = np.dot(X, self.w) + self.b
+            y_pred = self._sigmoid(linear_model)
+
+            dw = (1 / n_samples) * np.dot(X.T, (y_pred - y))
+            db = (1 / n_samples) * np.sum(y_pred - y)
+
+            self.w -= self.lr * dw
+            self.b -= self.lr * db
+
+    def predict_proba(self, X):
+        X = np.asarray(X, dtype=float)
+        linear_model = np.dot(X, self.w) + self.b
+        return self._sigmoid(linear_model)
+
+    def predict(self, X, threshold=0.5):
+        probs = self.predict_proba(X)
+        return (probs >= threshold).astype(int)</code></pre>
+          <p>Логика обучения:</p>
+          <ul>
+            <li>инициализируем веса нулями;</li>
+            <li>считаем линейную комбинацию признаков;</li>
+            <li>получаем вероятности через sigmoid;</li>
+            <li>считаем ошибку и градиенты;</li>
+            <li>делаем шаг градиентного спуска.</li>
+          </ul>
+
+          <h3>Реализация sklearn</h3>
+          <pre><code>from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+y_pred_proba = model.predict_proba(X_test)</code></pre>
+
+          <h3>Гиперпараметры sklearn</h3>
+          <table class="table small">
+            <tr><th>Параметр</th><th>Что делает</th><th>Когда использовать</th></tr>
+            <tr><td><code>C</code></td><td>Обратная сила регуляризации</td><td>Малый C — сильнее регуляризация, большой C — слабее</td></tr>
+            <tr><td><code>penalty</code></td><td>Тип регуляризации</td><td><code>l1</code>, <code>l2</code>, <code>elasticnet</code>, <code>None</code></td></tr>
+            <tr><td><code>solver</code></td><td>Алгоритм оптимизации</td><td><code>liblinear</code>, <code>lbfgs</code>, <code>saga</code> и др.</td></tr>
+            <tr><td><code>l1_ratio</code></td><td>Смесь L1/L2</td><td>Только для <code>elasticnet</code></td></tr>
+            <tr><td><code>class_weight</code></td><td>Учет дисбаланса классов</td><td><code>balanced</code> полезен при дисбалансе</td></tr>
+            <tr><td><code>fit_intercept</code></td><td>Добавлять ли bias</td><td>Обычно <code>True</code></td></tr>
+            <tr><td><code>max_iter</code></td><td>Число итераций</td><td>Если модель не сходится — увеличивать</td></tr>
+          </table>
+
+          <h3>Вариант словаря для GridSearchCV</h3>
+          <pre><code>param_grid = [
+    {
+        "penalty": ["l2"],
+        "C": [0.001, 0.01, 0.1, 1, 10, 100],
+        "solver": ["liblinear", "saga"],
+        "class_weight": [None, "balanced"],
+        "fit_intercept": [True, False],
+        "max_iter": [100, 300, 1000]
+    },
+    {
+        "penalty": ["l1"],
+        "C": [0.001, 0.01, 0.1, 1, 10, 100],
+        "solver": ["liblinear", "saga"],
+        "class_weight": [None, "balanced"],
+        "fit_intercept": [True, False],
+        "max_iter": [100, 300, 1000]
+    },
+    {
+        "penalty": ["elasticnet"],
+        "C": [0.001, 0.01, 0.1, 1, 10, 100],
+        "solver": ["saga"],
+        "l1_ratio": [0, 0.5, 1],
+        "class_weight": [None, "balanced"],
+        "fit_intercept": [True, False],
+        "max_iter": [300, 1000]
+    },
+    {
+        "penalty": [None],
+        "solver": ["lbfgs", "saga"],
+        "class_weight": [None, "balanced"],
+        "fit_intercept": [True, False],
+        "max_iter": [100, 300, 1000]
+    }
+]</code></pre>
+
+          <div class="grid-2">
+            <div class="card formula pros">
+              <b>Плюсы</b><br>
+              Быстрая, интерпретируемая, даёт вероятности, хорошо работает на небольших и средних данных, сильный базовый метод.
+            </div>
+            <div class="card formula cons">
+              <b>Минусы</b><br>
+              Плохо ловит сложные нелинейные зависимости, чувствительна к выбросам и мультиколлинеарности.
+            </div>
+          </div>
+          <div class="card note">
+            <b>Сколько данных нужно:</b> грубо от 10–20 наблюдений на 1 признак, лучше сотни и тысячи объектов.<br>
+            <b>Лучшие задачи:</b> бинарная и многоклассовая классификация, интерпретируемые решения, вероятностные предсказания, baseline для табличных данных.<br>
+            <b>Важно:</b> признаки часто полезно масштабировать, особенно при регуляризации.
+          </div>
+        </section>
+
+        <section class="section" id="dt">
+          <h2>4. Decision Tree</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Коротко: как работает</h3>
+              <p>Decision Tree последовательно делит пространство признаков на области с помощью правил вида <code>x_j \le t</code>, пока листья не станут достаточно "чистыми".</p>
+            </div>
+            <div class="card">
+              <h3>Интуиция</h3>
+              <p>Дерево задаёт цепочку вопросов: «признак меньше порога?». В конце пути попадаем в лист и получаем класс.</p>
+            </div>
+          </div>
+
+          <h3>Подробное математическое объяснение</h3>
+          <p>В каждом узле выбирается разбиение, которое максимально уменьшает неоднородность.</p>
+          <p>Для классификации обычно используются:</p>
+          <div class="formula">Gini = 1 - \sum_{c=1}^{K} p_c^2</div>
+          <div class="formula">Entropy = -\sum_{c=1}^{K} p_c \log p_c</div>
+          <p>Качество разбиения:</p>
+          <div class="formula">\Delta I = I(parent) - \left(\frac{n_{left}}{n}I(left) + \frac{n_{right}}{n}I(right)\right)</div>
+          <p>Здесь <code>I</code> — мера неоднородности. Алгоритм жадный: на каждом шаге выбирается лучший локальный split.</p>
+
+          <h3>Собственная реализация с объяснением</h3>
+          <pre><code>import numpy as np
 
 class DecisionTreeNode:
     def __init__(self, feature=None, threshold=None, left=None, right=None, value=None):
@@ -118,150 +610,190 @@ class DecisionTreeNode:
         self.right = right
         self.value = value
 
-class DecisionTreeClassifierFromScratch:
+class DecisionTreeClassifierCustom:
     def __init__(self, max_depth=10, min_samples_split=2):
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
+        self.root = None
 
     def _gini(self, y):
-        _, counts = np.unique(y, return_counts=True)
-        p = counts / len(y)
-        return 1 - np.sum(p ** 2)
+        classes, counts = np.unique(y, return_counts=True)
+        probs = counts / len(y)
+        return 1 - np.sum(probs ** 2)
 
     def _best_split(self, X, y):
+        n_samples, n_features = X.shape
         best_gain = -1
-        best = (None, None)
-        parent_imp = self._gini(y)
-        n, m = X.shape
-        for f in range(m):
-            thresholds = np.unique(X[:, f])
-            for t in thresholds:
-                left_idx = X[:, f] <= t
-                right_idx = ~left_idx
-                if left_idx.sum() == 0 or right_idx.sum() == 0:
-                    continue
-                left_imp = self._gini(y[left_idx])
-                right_imp = self._gini(y[right_idx])
-                gain = parent_imp - (left_idx.sum()/n)*left_imp - (right_idx.sum()/n)*right_imp
-                if gain > best_gain:
-                    best_gain = gain
-                    best = (f, t)
-        return best
+        split_idx, split_thresh = None, None
+        parent_impurity = self._gini(y)
 
-    def _build(self, X, y, depth):
-        classes, counts = np.unique(y, return_counts=True)
-        majority = classes[np.argmax(counts)]
-        if depth >= self.max_depth or len(y) < self.min_samples_split or len(classes) == 1:
-            return DecisionTreeNode(value=majority)
-        f, t = self._best_split(X, y)
-        if f is None:
-            return DecisionTreeNode(value=majority)
-        left_idx = X[:, f] <= t
-        right_idx = ~left_idx
-        left = self._build(X[left_idx], y[left_idx], depth + 1)
-        right = self._build(X[right_idx], y[right_idx], depth + 1)
-        return DecisionTreeNode(feature=f, threshold=t, left=left, right=right)
+        for feature_idx in range(n_features):
+            thresholds = np.unique(X[:, feature_idx])
+            for threshold in thresholds:
+                left_mask = X[:, feature_idx] <= threshold
+                right_mask = ~left_mask
+
+                if np.sum(left_mask) == 0 or np.sum(right_mask) == 0:
+                    continue
+
+                left_y = y[left_mask]
+                right_y = y[right_mask]
+
+                n_left, n_right = len(left_y), len(right_y)
+                child_impurity = (n_left / n_samples) * self._gini(left_y) + \
+                                 (n_right / n_samples) * self._gini(right_y)
+
+                info_gain = parent_impurity - child_impurity
+
+                if info_gain > best_gain:
+                    best_gain = info_gain
+                    split_idx = feature_idx
+                    split_thresh = threshold
+
+        return split_idx, split_thresh
+
+    def _build_tree(self, X, y, depth=0):
+        n_samples = X.shape[0]
+        n_labels = len(np.unique(y))
+
+        if depth >= self.max_depth or n_labels == 1 or n_samples < self.min_samples_split:
+            leaf_value = np.bincount(y).argmax()
+            return DecisionTreeNode(value=leaf_value)
+
+        feature_idx, threshold = self._best_split(X, y)
+        if feature_idx is None:
+            leaf_value = np.bincount(y).argmax()
+            return DecisionTreeNode(value=leaf_value)
+
+        left_mask = X[:, feature_idx] <= threshold
+        right_mask = ~left_mask
+
+        left_child = self._build_tree(X[left_mask], y[left_mask], depth + 1)
+        right_child = self._build_tree(X[right_mask], y[right_mask], depth + 1)
+
+        return DecisionTreeNode(feature_idx, threshold, left_child, right_child)
 
     def fit(self, X, y):
         X = np.asarray(X, dtype=float)
-        y = np.asarray(y)
-        self.root = self._build(X, y, 0)
-        return self
+        y = np.asarray(y, dtype=int)
+        self.root = self._build_tree(X, y)
 
-    def _predict_one(self, x, node):
+    def _traverse_tree(self, x, node):
         if node.value is not None:
             return node.value
+
         if x[node.feature] <= node.threshold:
-            return self._predict_one(x, node.left)
-        return self._predict_one(x, node.right)
+            return self._traverse_tree(x, node.left)
+        return self._traverse_tree(x, node.right)
 
     def predict(self, X):
         X = np.asarray(X, dtype=float)
-        return np.array([self._predict_one(x, self.root) for x in X])</code></pre></details>
-<details><summary>Гиперпараметры (подробно)</summary><ul><li><code>criterion</code>: <code>gini/entropy/log_loss</code> - функция качества сплита.</li><li><code>max_depth</code>: главный ограничитель сложности.</li><li><code>min_samples_split</code>, <code>min_samples_leaf</code>: минимальный размер узла/листа.</li><li><code>max_features</code>: регуляризация через ограничение признаков.</li><li><code>ccp_alpha</code>: post-pruning (cost-complexity pruning).</li></ul></details>
-</section>
+        return np.array([self._traverse_tree(x, self.root) for x in X])</code></pre>
 
-<section class="panel" id="rf"><h2>Random Forest</h2><details><summary>Математическое обоснование подробно</summary><p>Каждое дерево обучается на бутстрэп-выборке, а в узлах рассматривается случайное подмножество признаков. Это декоррелирует деревья и снижает дисперсию ансамбля при голосовании.</p></details><details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
-from collections import Counter
+          <h3>Что делает этот код</h3>
+          <ul>
+            <li>считает impurity в узле через Gini;</li>
+            <li>перебирает все признаки и пороги;</li>
+            <li>находит split с максимальным приростом качества;</li>
+            <li>рекурсивно строит левое и правое поддерево;</li>
+            <li>в листьях хранит наиболее частый класс.</li>
+          </ul>
 
-class RandomForestClassifierFromScratch:
-    def __init__(self, n_estimators=50, max_depth=8, max_features="sqrt", random_state=42):
-        self.n_estimators = n_estimators
-        self.max_depth = max_depth
-        self.max_features = max_features
-        self.rng = np.random.default_rng(random_state)
+          <h3>Реализация sklearn</h3>
+          <pre><code>from sklearn.tree import DecisionTreeClassifier
 
-    def _feature_count(self, n_features):
-        if self.max_features == "sqrt":
-            return max(1, int(np.sqrt(n_features)))
-        if self.max_features == "log2":
-            return max(1, int(np.log2(n_features)))
-        return n_features
+model = DecisionTreeClassifier(
+    criterion="gini",
+    max_depth=5,
+    min_samples_split=2,
+    min_samples_leaf=1,
+    random_state=42
+)
 
-    def fit(self, X, y):
-        X = np.asarray(X, dtype=float)
-        y = np.asarray(y)
-        n_samples, n_features = X.shape
-        self.trees_ = []
-        self.feat_idx_ = []
-        k = self._feature_count(n_features)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)</code></pre>
 
-        for _ in range(self.n_estimators):
-            idx = self.rng.integers(0, n_samples, n_samples)
-            fidx = self.rng.choice(n_features, size=k, replace=False)
-            tree = DecisionTreeClassifierFromScratch(max_depth=self.max_depth)
-            tree.fit(X[idx][:, fidx], y[idx])
-            self.trees_.append(tree)
-            self.feat_idx_.append(fidx)
-        return self
+          <h3>Гиперпараметры sklearn</h3>
+          <table class="table small">
+            <tr><th>Параметр</th><th>Что делает</th><th>Когда важен</th></tr>
+            <tr><td><code>criterion</code></td><td>Функция качества split</td><td><code>gini</code>, <code>entropy</code>, <code>log_loss</code></td></tr>
+            <tr><td><code>max_depth</code></td><td>Максимальная глубина дерева</td><td>Главный ограничитель переобучения</td></tr>
+            <tr><td><code>min_samples_split</code></td><td>Минимум объектов для split</td><td>Слишком малое значение ведёт к переобучению</td></tr>
+            <tr><td><code>min_samples_leaf</code></td><td>Минимум объектов в листе</td><td>Стабилизирует листья</td></tr>
+            <tr><td><code>max_features</code></td><td>Сколько признаков рассматривать</td><td>Регуляризация дерева</td></tr>
+            <tr><td><code>splitter</code></td><td><code>best</code> или <code>random</code></td><td>Random иногда помогает как регуляризация</td></tr>
+            <tr><td><code>ccp_alpha</code></td><td>Параметр pruning</td><td>Позволяет обрезать слишком сложное дерево</td></tr>
+            <tr><td><code>class_weight</code></td><td>Вес классов</td><td>Полезно при дисбалансе</td></tr>
+          </table>
 
-    def predict(self, X):
-        X = np.asarray(X, dtype=float)
-        all_preds = []
-        for tree, fidx in zip(self.trees_, self.feat_idx_):
-            all_preds.append(tree.predict(X[:, fidx]))
-        all_preds = np.array(all_preds).T
-        return np.array([Counter(row).most_common(1)[0][0] for row in all_preds])</code></pre></details>
-<details><summary>Гиперпараметры (подробно)</summary><ul><li><code>n_estimators</code>: больше деревьев -> стабильнее, но медленнее.</li><li><code>max_depth</code>, <code>min_samples_leaf</code>: контролируют переобучение деревьев.</li><li><code>max_features</code>: ключ к декорреляции деревьев.</li><li><code>bootstrap</code>: включение/выключение бутстрэпа.</li><li><code>class_weight</code>: важно при дисбалансе.</li><li><code>oob_score</code>: оценка качества out-of-bag без отдельной валидации.</li></ul></details></section>
+          <h3>Вариант словаря для GridSearchCV</h3>
+          <pre><code>param_grid = {
+    "criterion": ["gini", "entropy", "log_loss"],
+    "max_depth": [None, 3, 5, 10, 20],
+    "min_samples_split": [2, 5, 10, 20],
+    "min_samples_leaf": [1, 2, 4, 8],
+    "max_features": [None, "sqrt", "log2"],
+    "splitter": ["best", "random"],
+    "ccp_alpha": [0.0, 0.001, 0.01, 0.1],
+    "class_weight": [None, "balanced"]
+}</code></pre>
 
-<section class="panel" id="lr"><h2>Logistic Regression</h2><details><summary>Математическое обоснование подробно</summary><p><code>p(y=1|x)=σ(w^Tx+b)</code>, где <code>σ(z)=1/(1+e^{-z})</code>. Минимизируем log-loss: <code>L=-1/n Σ[y log p + (1-y) log(1-p)] + λR(w)</code>. Градиенты: <code>∂L/∂w = X^T(p-y)/n + λ∂R/∂w</code>, <code>∂L/∂b = mean(p-y)</code>.</p></details><details><summary>Собственная реализация (полная, без sklearn)</summary><pre><code>import numpy as np
+          <div class="grid-2">
+            <div class="card formula pros">
+              <b>Плюсы</b><br>
+              Очень интерпретируемая модель, не требует масштабирования, хорошо ловит нелинейности и взаимодействия признаков.
+            </div>
+            <div class="card formula cons">
+              <b>Минусы</b><br>
+              Легко переобучается, нестабильна к малым изменениям данных, иногда даёт рваные разделяющие границы.
+            </div>
+          </div>
+          <div class="card note">
+            <b>Сколько данных нужно:</b> работает от малых до средних выборок; на больших данных часто переходят к ансамблям типа Random Forest и Gradient Boosting.<br>
+            <b>Лучшие задачи:</b> табличные данные, объяснимые модели, задачи с нелинейными зависимостями, когда важна интерпретация правил.<br>
+            <b>Важно:</b> деревья не требуют нормализации признаков.
+          </div>
+        </section>
 
-class LogisticRegressionFromScratch:
-    def __init__(self, lr=0.05, n_iter=3000, l2=0.0):
-        self.lr = lr
-        self.n_iter = n_iter
-        self.l2 = l2
+        <section class="section" id="compare">
+          <h2>Краткое сравнение моделей</h2>
+          <table class="table">
+            <tr>
+              <th>Модель</th>
+              <th>Сильные стороны</th>
+              <th>Слабые стороны</th>
+              <th>Где особенно хороша</th>
+            </tr>
+            <tr>
+              <td>Naive Bayes</td>
+              <td>Очень быстрый, хорош на тексте, мало данных для старта</td>
+              <td>Независимость признаков часто нарушается</td>
+              <td>Тексты, спам, baseline</td>
+            </tr>
+            <tr>
+              <td>KNN</td>
+              <td>Простой, ловит нелинейности, понятен интуитивно</td>
+              <td>Медленное предсказание, чувствителен к масштабу</td>
+              <td>Малые/средние задачи по похожести</td>
+            </tr>
+            <tr>
+              <td>Logistic Regression</td>
+              <td>Интерпретируемая, быстрая, даёт вероятности</td>
+              <td>Плохо для сложных нелинейностей</td>
+              <td>Линейно разделимые табличные данные, baseline</td>
+            </tr>
+            <tr>
+              <td>Decision Tree</td>
+              <td>Понятные правила, нелинейности, не нужен scaler</td>
+              <td>Переобучение, нестабильность</td>
+              <td>Объяснимые табличные модели</td>
+            </tr>
+          </table>
+        </section>
 
-    def _sigmoid(self, z):
-        return 1 / (1 + np.exp(-z))
-
-    def fit(self, X, y):
-        X = np.asarray(X, dtype=float)
-        y = np.asarray(y, dtype=float)
-        n, m = X.shape
-        self.w = np.zeros(m)
-        self.b = 0.0
-        for _ in range(self.n_iter):
-            z = X @ self.w + self.b
-            p = self._sigmoid(z)
-            dw = (X.T @ (p - y)) / n + self.l2 * self.w
-            db = np.mean(p - y)
-            self.w -= self.lr * dw
-            self.b -= self.lr * db
-        return self
-
-    def predict_proba(self, X):
-        X = np.asarray(X, dtype=float)
-        return self._sigmoid(X @ self.w + self.b)
-
-    def predict(self, X):
-        return (self.predict_proba(X) >= 0.5).astype(int)</code></pre></details>
-<details><summary>Гиперпараметры (подробно)</summary><ul><li><code>C</code>: обратная сила регуляризации (меньше <code>C</code> -> сильнее regularization).</li><li><code>penalty</code>: <code>l1/l2/elasticnet/None</code>; влияет на sparsity и устойчивость.</li><li><code>solver</code>: совместимость с penalty и размерностью (<code>liblinear</code>, <code>lbfgs</code>, <code>saga</code>).</li><li><code>class_weight</code>: компенсация дисбаланса.</li><li><code>max_iter</code>, <code>tol</code>: критерии сходимости.</li><li><code>multi_class</code>: one-vs-rest или multinomial softmax.</li></ul></details>
-<details><summary>Сетка гиперпараметров для GridSearchCV</summary><pre><code>param_grid = {
-    "C": [0.01, 0.1, 1, 10, 100],
-    "penalty": ["l1", "l2"],
-    "solver": ["liblinear", "saga"],
-    "class_weight": [None, "balanced"],
-    "max_iter": [1000, 2000, 4000]
-}</code></pre></details></section>
-</main></body></html>
+        <div class="footer">HTML-страница с теорией, математикой, реализациями и гиперпараметрами по 4 моделям классификации.</div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
